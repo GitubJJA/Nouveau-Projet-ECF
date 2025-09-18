@@ -4,6 +4,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import apiSitesRouter from './BackEnd/routes/apiSites.js';
 import apiUserRouter from './BackEnd/routes/apiUser.js';
+import cors from 'cors';
 
 dotenv.config({ path: './BackEnd/config/.env' });
 
@@ -13,6 +14,10 @@ const __dirname = path.dirname(__filename);
 console.log("Le script démarre !");
 
 const app = express();
+
+// Autorise toutes les origines (développement)
+app.use(cors());
+
 const PORT = process.env.PORT || 3000;
 
 // parsing JSON bodies

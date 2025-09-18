@@ -2,7 +2,7 @@ import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
 
 // charge les variables d'environnement du dossier BackEnd/config
-dotenv.config({ path: './BackEnd/config/.env' });
+dotenv.config();
 
 const pool = mysql.createPool({
 	host: process.env.DB_HOST || 'localhost',
@@ -18,17 +18,15 @@ const pool = mysql.createPool({
 /**
  * Test connection to DB by acquiring a connection and running a simple query
  */
-export async function connectTest() {
-	let conn;
-	try {
-		conn = await pool.getConnection();
-		await conn.ping();
-		// simple query to ensure DB is responsive
-		await conn.query('SELECT 1');
-		return true;
-	} finally {
-		if (conn) try { conn.release(); } catch (e) { /* ignore release errors */ }
-	}
-}
+// Test de la connexion (dans une fonction asynchrone)
+(async () => {
+    try {
+      const connection = await pool.getConnection();
+      console.log(' Connexion MySQL réussie');
+      connection.release();
+    } catch (err) {
+      console.error(' Erreur de connexion MySQL :', err);
+    }
+  })();
 
 export default pool;
