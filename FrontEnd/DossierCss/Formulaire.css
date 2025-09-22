@@ -30,7 +30,7 @@
   background-color: #fff;
   margin: 10% auto;
   padding: 20px;
-  width: 100vh;
+  width: 100%;
   height: 70vh;
   max-width: 500px;
   border-radius: 8px;
@@ -76,9 +76,9 @@ label {
 /* Responsive : styles pour écran <= 780px */
 @media (max-width: 780px) {
   .modal{
-    width: 50vh;
+    width: 100%;
   }
   .modal-content {
-    width: 50vh;
+    width: 100vh;
   }
 }

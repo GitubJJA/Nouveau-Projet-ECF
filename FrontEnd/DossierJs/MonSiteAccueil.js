@@ -122,7 +122,8 @@ function afficherSites(sitesToShow = sites) {
             <h2>${site.name}</h2>
             <p class="paragraphSite">${site.description}</p>
             <a class="transformText" href="${site.url}" target="_blank">Visiter le site</a>
-            <img src="${site.image || 'default.png'}" alt="" width="100px" height="100px">
+            <img src="https://www.google.com/s2/favicons?sz=64&domain=${new URL(site.url).hostname}" 
+            alt="favicon" width="65" height="65">
             ${user && user.id_utilisateur === site.id_utilisateur_1 ? `
             <div class="actions">
                 <button class="btns update-btn" data-id="${site.id}">Modifier</button>
