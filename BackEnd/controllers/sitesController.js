@@ -28,11 +28,21 @@ export async function createSite(req, res, next) {
   try {
     const body = req.body || {};
 
-    // ✅ auto-remplit date_ajout si absent
+    // Vérifie que l'utilisateur est connecté via le middleware authenticate
+    if (!req.user || !req.user.id_utilisateur) {
+      return res.status(401).json({ error: "user_not_authenticated" });
+    }
+
+    // Auto-remplit la date si elle n'est pas fournie
     if (!body.date_ajout) {
       body.date_ajout = new Date(); // date actuelle
     }
 
+    // On prend l'id de l'utilisateur connecté
+    body.id_utilisateur_1 = req.user.id_utilisateur;
+    
+
+    // Champs autorisés
     const allowed = ['nom', 'description', 'image', 'url', 'date_ajout', 'valide', 'id_categorie', 'id_utilisateur_1'];
     const fields = [];
     const placeholders = [];
@@ -46,28 +56,34 @@ export async function createSite(req, res, next) {
       }
     }
 
-    if (fields.length === 0) return res.status(400).json({ error: 'no_fields' });
-
-    // Vérification FK id_utilisateur_1
-    if (body.id_utilisateur_1) {
-      const [rows] = await pool.query(
-        'SELECT COUNT(*) AS count FROM utilisateurs WHERE id_utilisateur = ?',
-        [body.id_utilisateur_1]
-      );
-      if (rows[0].count === 0) return res.status(400).json({ error: 'invalid_user' });
+    if (fields.length === 0) {
+      return res.status(400).json({ error: 'no_fields' });
     }
 
+    // Vérification FK id_utilisateur_1 (doit exister dans la table utilisateurs)
+    const [rows] = await pool.query(
+      'SELECT COUNT(*) AS count FROM utilisateurs WHERE id_utilisateur = ?',
+      [body.id_utilisateur_1]
+    );
+    if (rows[0].count === 0) {
+      return res.status(400).json({ error: 'invalid_user' });
+    }
+
+    // Insertion dans la table sites
     const sql = `INSERT INTO sites (${fields.join(',')}) VALUES (${placeholders.join(',')})`;
     const [result] = await pool.query(sql, values);
 
+    // Récupère le site inséré pour le renvoyer
     const insertId = result.insertId;
-    const [rows] = await pool.query('SELECT * FROM sites WHERE id = ?', [insertId]);
+    const [siteRows] = await pool.query('SELECT * FROM sites WHERE id = ?', [insertId]);
 
-    res.status(201).json(rows[0]);
+    res.status(201).json(siteRows[0]);
   } catch (err) {
     next(err);
   }
 }
+
+
 
 // PATCH /api/sites/:id
 export async function patchSite(req, res, next) {
@@ -172,5 +188,7 @@ export async function deleteSite(req, res, next) {
     next(err);
   }
 }
+
+
 
 export default { getAllSites, getSiteById, createSite, updateSite, patchSite, deleteSite };

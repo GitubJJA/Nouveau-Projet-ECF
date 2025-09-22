@@ -1,10 +1,14 @@
 import express from "express";
+import bodyParser from "body-parser";
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
 import apiSitesRouter from './BackEnd/routes/apiSites.js';
-import apiUserRouter from './BackEnd/routes/apiUser.js';
+import apiUserRouter  from './BackEnd/routes/apiUser.js';
+import { signupUser, loginUser } from './BackEnd/controllers/usersController.js';
 import cors from 'cors';
+
+
 
 dotenv.config({ path: './BackEnd/config/.env' });
 
@@ -17,8 +21,9 @@ const app = express();
 
 // Autorise toutes les origines (développement)
 app.use(cors());
-
+app.use(bodyParser.json());
 const PORT = process.env.PORT || 3000;
+
 
 // parsing JSON bodies
 app.use(express.json());
@@ -26,6 +31,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Servir les fichiers statiques depuis le dossier FrontEnd
 app.use(express.static(path.join(__dirname, 'FrontEnd')));
+
 
 // Renvoyer explicitement la page d'accueil
 app.get('/', (req, res) => {
@@ -50,9 +56,15 @@ app.get('/Signup.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'FrontEnd', 'DossierHtml', 'Signup.html'));
 });
 
+//API login/signup
+app.post("/api/signup", signupUser);
+app.post("/api/login", loginUser);
+
+
 // Monter le routeurs API
 app.use('/api/sites', apiSitesRouter);
 app.use('/api/users', apiUserRouter);
+
 
 // 404 handler
 app.use((req, res, next) => {

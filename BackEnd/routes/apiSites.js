@@ -1,4 +1,5 @@
 import express from 'express';
+import { authenticate } from '../middleware/authMiddleware.js';
 import { getAllSites, getSiteById, createSite, updateSite, patchSite, deleteSite } from '../controllers/sitesController.js';
 
 const router = express.Router();
@@ -10,16 +11,16 @@ router.get('/', getAllSites);
 router.get('/:id', getSiteById);
 
 // POST /api/sites
-router.post('/', createSite);
+router.post('/', authenticate, createSite);
 
 // PUT /api/sites/:id
-router.put('/:id', updateSite);
+router.put('/:id', authenticate, updateSite);
 
 //PATCH /api/sites/:id
-router.patch('/:id', patchSite);
+router.patch('/:id', authenticate, patchSite);
 
 // DELETE /api/sites/:id
-router.delete('/:id', deleteSite);
+router.delete('/:id', authenticate, deleteSite);
 
 export default router;
 

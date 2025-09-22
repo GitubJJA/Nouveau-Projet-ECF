@@ -25,6 +25,8 @@ export async function loadSites() {
             }
 
             return {
+                id: site.id_site || site.id,              // <-- identifiant unique du site
+                id_utilisateur_1: site.id_utilisateur_1,  // <-- pour vérifier l'auteur
                 name: site.nom || "Sans nom",
                 description: site.description || "",
                 url: site.url || "#",

@@ -1,5 +1,6 @@
 import pool from '../config/dataBase.js';
 import bcrypt from 'bcrypt';
+import jwt from "jsonwebtoken";
 
 const SALT_ROUNDS = 10;
 
@@ -110,5 +111,72 @@ export async function deleteUser(req, res, next) {
   }
 }
 
-export default { listUsers, getUser, createUser, updateUser, deleteUser };
+
+const SECRET_KEY = "TonSecretTrèsSecret123!"; // ⚠️ à mettre plus tard dans un .env
+
+export async function loginUser(req, res, next) {
+  try {
+    const { email, mot_de_passe } = req.body;
+
+    if (!email || !mot_de_passe) {
+      return res.status(400).json({ error: "missing_fields" });
+    }
+
+    // Vérifie l'utilisateur
+    const [rows] = await pool.query("SELECT * FROM utilisateurs WHERE email = ?", [email]);
+    if (rows.length === 0) return res.status(401).json({ error: "invalid_credentials" });
+
+    const user = rows[0];
+
+    // Vérifie le mot de passe
+    const valid = await bcrypt.compare(mot_de_passe, user.mot_de_passe);
+    if (!valid) return res.status(401).json({ error: "invalid_credentials" });
+
+    // Crée un token
+    const token = jwt.sign(
+      { id_utilisateur: user.id_utilisateur, email: user.email },
+      SECRET_KEY,
+      { expiresIn: "2h" }
+    );
+
+    res.json({
+      message: "Connexion réussie",
+      token,
+      user: { id_utilisateur: user.id_utilisateur, email: user.email }
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+
+export async function signupUser(req, res, next) {
+  try {
+    const { nom, prenom, email, mot_de_passe } = req.body;
+    if (!nom || !prenom || !email || !mot_de_passe) return res.status(400).json({ error: "missing_fields" });
+
+    // 1) vérifier qu'email n'existe pas
+    const [existing] = await pool.query("SELECT id_utilisateur FROM utilisateurs WHERE email = ?", [email]);
+    if (existing.length) return res.status(409).json({ error: "email_exists" });
+
+    // 2) hash password
+    const hashed = await bcrypt.hash(mot_de_passe, SALT_ROUNDS);
+
+    // 3) insert (attention colonne prénom avec accent)
+    const sql = "INSERT INTO utilisateurs (`nom`, `prénom`, `email`, `mot_de_passe`, `Id_Role`) VALUES (?, ?, ?, ?, ?)";
+    const roleDefault = 3; // utilisateur standard
+    const [result] = await pool.query(sql, [nom, prenom, email, hashed, roleDefault]);
+
+    // 4) renvoyer user sans mot_de_passe
+    const userId = result.insertId;
+    const [rows] = await pool.query("SELECT id_utilisateur, nom, `prénom`, email FROM utilisateurs WHERE id_utilisateur = ?", [userId]);
+    res.status(201).json(rows[0]);
+  } catch (err) {
+    next(err);
+  }
+}
+
+
+
+export default { listUsers, getUser, createUser, updateUser, deleteUser, signupUser, loginUser };
 
