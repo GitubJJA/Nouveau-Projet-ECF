@@ -22,7 +22,6 @@ if (loginForm) {
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
 
-      alert("Connexion réussie !");
       window.location.href = "MonSiteAccueil.html"; // redirection vers accueil
 
     } catch (err) {

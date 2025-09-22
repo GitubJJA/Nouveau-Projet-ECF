@@ -1,9 +1,61 @@
 // ----------------------------
 // Imports
 // ----------------------------
-import { sites, loadSites } from "../data/sites.js"; // <-- import de loadSites
-import { afficherPopUp, popupMovements } from "./Formulaire.js";
+import { sites, loadSites } from "../data/sites.js";
+import { injecterFormulaire, popupMovements } from "./Formulaire.js";
 import { filtrerSitesParRecherche, filtrerParCategorie } from "../Dossier Scripts/FiltreTriage.js";
+
+// ----------------------------
+// Notifications
+// ----------------------------
+export function showNotification(message, type = "success", duration = 3000) {
+    const container = document.getElementById("notification-container");
+    if (!container) return;
+
+    const notif = document.createElement("div");
+    notif.className = `notification ${type}`;
+    notif.textContent = message;
+    container.appendChild(notif);
+
+    setTimeout(() => notif.classList.add("show"), 50);
+
+    setTimeout(() => {
+        notif.classList.remove("show");
+        setTimeout(() => notif.remove(), 500);
+    }, duration);
+}
+
+// ----------------------------
+// Confirmation de suppression avec animation
+// ----------------------------
+function showConfirm(callbackYes) {
+    const confirmContainer = document.getElementById("confirm-container");
+    const btnYes = document.getElementById("confirm-yes");
+    const btnNo = document.getElementById("confirm-no");
+
+    // Affiche le conteneur et déclenche l’animation
+    confirmContainer.style.display = "flex";
+    setTimeout(() => confirmContainer.classList.add("show"), 10);
+
+    const cleanup = () => {
+        confirmContainer.classList.remove("show");
+        setTimeout(() => {
+            confirmContainer.style.display = "none";
+        }, 300); // temps de l'animation
+        btnYes.removeEventListener("click", yesHandler);
+        btnNo.removeEventListener("click", noHandler);
+    };
+
+    const yesHandler = () => {
+        cleanup();
+        callbackYes();
+    };
+    const noHandler = () => cleanup();
+
+    btnYes.addEventListener("click", yesHandler);
+    btnNo.addEventListener("click", noHandler);
+}
+
 
 // ----------------------------
 // Affichage de l'accueil
@@ -34,12 +86,16 @@ function afficherBoutonsHeader() {
             <button class="btn" id="openPopup">Référencer mon site</button>
         `;
 
+        // Déconnexion
         document.getElementById("logoutBtn").addEventListener("click", () => {
             localStorage.removeItem("token");
             localStorage.removeItem("user");
-            alert("Déconnecté !");
             location.reload();
         });
+
+        // Notification connexion réussie
+        showNotification("Connexion réussie !", "success");
+
     } else {
         buttonsContainer.innerHTML = `
             <a class="btn" href="login.html" rel="noopener noreferrer">Connexion</a>
@@ -69,8 +125,8 @@ function afficherSites(sitesToShow = sites) {
             <img src="${site.image || 'default.png'}" alt="" width="100px" height="100px">
             ${user && user.id_utilisateur === site.id_utilisateur_1 ? `
             <div class="actions">
-                <button class="btn update-btn" data-id="${site.id}">Modifier</button>
-                <button class="btn delete-btn" data-id="${site.id}">Supprimer</button>
+                <button class="btns update-btn" data-id="${site.id}">Modifier</button>
+                <button class="btns delete-btn" data-id="${site.id}">Supprimer</button>
             </div>` : ''}
         </div>`;
     });
@@ -98,23 +154,23 @@ function afficherSites(sitesToShow = sites) {
         btn.addEventListener('click', async (e) => {
             const siteId = Number(e.target.dataset.id);
             const token = localStorage.getItem("token");
-            if (!token) return alert("Non autorisé");
+            if (!token) return showNotification("Non autorisé", "error");
 
-            if (!confirm("Voulez-vous vraiment supprimer ce site ?")) return;
+            showConfirm(async () => {
+                try {
+                    const res = await fetch(`http://localhost:3001/api/sites/${siteId}`, {
+                        method: "DELETE",
+                        headers: { "Authorization": `Bearer ${token}` }
+                    });
+                    if (!res.ok) throw new Error("Erreur lors de la suppression");
 
-            try {
-                const res = await fetch(`http://localhost:3001/api/sites/${siteId}`, {
-                    method: "DELETE",
-                    headers: { "Authorization": `Bearer ${token}` }
-                });
-                if (!res.ok) throw new Error("Erreur lors de la suppression");
-
-                alert("Site supprimé !");
-                await loadSites();        // Recharge les sites depuis la BDD
-                afficherSites(sites);     // Affiche à nouveau
-            } catch (err) {
-                alert(err.message);
-            }
+                    showNotification("Site supprimé !", "success");
+                    await loadSites();
+                    afficherAccueil();
+                } catch (err) {
+                    showNotification("Erreur : " + err.message, "error");
+                }
+            });
         });
     });
 }
@@ -128,13 +184,10 @@ function ouvrirFormulaireUpdate(site) {
     const form = document.getElementById("popupForm");
     form.style.display = "block";
 
-    // Pré-remplit les champs
     document.getElementById("siteName").value = site.name;
     document.getElementById("description").value = site.description;
     document.getElementById("url").value = site.url;
     document.getElementById("category").value = site.category;
-
-    // Change le texte du bouton
     document.getElementById("submitBtn").textContent = "Modifier le site";
 }
 
@@ -149,7 +202,7 @@ function activerFormulaireAjout() {
         e.preventDefault();
 
         const user = JSON.parse(localStorage.getItem("user"));
-        if (!user) return alert("Vous devez être connecté !");
+        if (!user) return showNotification("Vous devez être connecté !", "error");
 
         const siteData = {
             nom: document.getElementById("siteName").value,
@@ -164,7 +217,6 @@ function activerFormulaireAjout() {
         try {
             let res;
             if (editingSiteId) {
-                // Mode édition
                 res = await fetch(`http://localhost:3001/api/sites/${editingSiteId}`, {
                     method: "PATCH",
                     headers: {
@@ -174,7 +226,6 @@ function activerFormulaireAjout() {
                     body: JSON.stringify(siteData)
                 });
             } else {
-                // Mode création
                 res = await fetch("http://localhost:3001/api/sites", {
                     method: "POST",
                     headers: {
@@ -190,20 +241,19 @@ function activerFormulaireAjout() {
                 throw new Error(data.error || "Erreur serveur");
             }
 
-            alert(editingSiteId ? "Site modifié !" : "Site ajouté !");
+            showNotification(editingSiteId ? "Site modifié !" : "Site ajouté !", "success");
             document.getElementById("popupForm").style.display = "none";
 
-            // Reset formulaire
             addSiteForm.reset();
             editingSiteId = null;
             document.getElementById("submitBtn").textContent = "Ajouter un site";
 
             await loadSites();
-            afficherSites(sites);
+            afficherAccueil();
 
         } catch (err) {
             console.error(err);
-            alert("Erreur : " + err.message);
+            showNotification("Erreur : " + err.message, "error");
         }
     });
 }
@@ -211,14 +261,11 @@ function activerFormulaireAjout() {
 // ----------------------------
 // Initialisation de la page
 // ----------------------------
-// ----------------------------
-// Initialisation de la page
-// ----------------------------
 afficherAccueil();
 afficherBoutonsHeader();
+injecterFormulaire();
 popupMovements();
 activerFormulaireAjout();
-
 
 // ----------------------------
 // Filtres
@@ -238,4 +285,3 @@ document.querySelectorAll('.asideNav2 a').forEach(link => {
         filtrerParCategorie(e, sites, afficherAccueil, afficherSites);
     });
 });
-

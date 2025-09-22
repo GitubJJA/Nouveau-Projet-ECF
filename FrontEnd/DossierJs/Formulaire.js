@@ -2,17 +2,15 @@
 // ----------------------------
 // Affichage et contrôle du popup
 // ----------------------------
-export function afficherPopUp(editingSite = null) {
-    const popup = document.getElementById("popupForm");
+
+// Injecte le formulaire UNE FOIS au chargement
+export function injecterFormulaire() {
     const addSiteForm = document.getElementById("addSiteForm");
+    if (!addSiteForm) return;
 
-    if (!popup || !addSiteForm) return;
-
-    // Injecte le contenu du formulaire
     addSiteForm.innerHTML = `
         <label for="siteName">Nom du site :</label>
         <input type="text" id="siteName" name="siteName" placeholder="Ex: MonSiteWeb" required>
-
         <label for="url">URL :</label>
         <input type="url" id="url" name="url" placeholder="https://monsite.com" required>
 
@@ -27,17 +25,27 @@ export function afficherPopUp(editingSite = null) {
         <label for="description">Description :</label>
         <textarea id="description" name="description" placeholder="Une courte description" rows="3" required></textarea>
 
-        <button type="submit" id="submitBtn" class="btn">
-            ${editingSite ? "Modifier le site" : "Ajouter le site"}
-        </button>
+        <button type="submit" id="submitBtn" class="btn">Ajouter le site</button>
     `;
+}
 
-    // Si on est en mode modification, pré-remplir le formulaire
+// Affiche le popup et pré-remplit si mode modification
+export function afficherPopUp(editingSite = null) {
+    const popup = document.getElementById("popupForm");
+    const addSiteForm = document.getElementById("addSiteForm");
+
+    if (!popup || !addSiteForm) return;
+
+    // Pré-remplissage pour modification
     if (editingSite) {
         document.getElementById("siteName").value = editingSite.name || "";
         document.getElementById("url").value = editingSite.url || "";
         document.getElementById("category").value = editingSite.id_categorie || "";
         document.getElementById("description").value = editingSite.description || "";
+        document.getElementById("submitBtn").textContent = "Modifier le site";
+    } else {
+        addSiteForm.reset();
+        document.getElementById("submitBtn").textContent = "Ajouter le site";
     }
 
     // Affiche le popup
@@ -75,3 +83,4 @@ export function popupMovements() {
         }
     });
 }
+

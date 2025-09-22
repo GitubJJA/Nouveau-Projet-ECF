@@ -54,13 +54,25 @@
     <span class="close">&times;</span>
     <h2>Ajouter un site à référencer</h2>
     <form id="addSiteForm">
-      
     </form>
   </div>
 </div>
     <footer>
         &copy; 2025 - Annuaire Web. Tous droits réservés.
     </footer>
+    <!-- Conteneur pour les notifications -->
+    <div id="notification-container" class="notification-container"></div>
+
+    <!-- Conteneur pour la confirmation de suppression -->
+    <div id="confirm-container" class="confirm-container" style="display: none;">
+        <div class="confirm-box">
+            <p>Voulez-vous vraiment supprimer ce site ?</p>
+            <div class="confirm-buttons">
+                <button class="btn btn-yes" id="confirm-yes">Oui</button>
+                <button class="btn btn-no" id="confirm-no">Non</button>
+            </div>
+        </div>
+    </div>
     <script type="module" src="../DossierJs/MonSiteAccueil.js"></script>
 </body>
 </html>
