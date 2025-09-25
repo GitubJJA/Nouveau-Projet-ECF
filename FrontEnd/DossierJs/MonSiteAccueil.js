@@ -4,26 +4,7 @@
 import { sites, loadSites } from "../data/sites.js";
 import { injecterFormulaire, popupMovements } from "./Formulaire.js";
 import { filtrerSitesParRecherche, filtrerParCategorie } from "../Dossier Scripts/FiltreTriage.js";
-
-// ----------------------------
-// Notifications
-// ----------------------------
-export function showNotification(message, type = "success", duration = 3000) {
-    const container = document.getElementById("notification-container");
-    if (!container) return;
-
-    const notif = document.createElement("div");
-    notif.className = `notification ${type}`;
-    notif.textContent = message;
-    container.appendChild(notif);
-
-    setTimeout(() => notif.classList.add("show"), 50);
-
-    setTimeout(() => {
-        notif.classList.remove("show");
-        setTimeout(() => notif.remove(), 500);
-    }, duration);
-}
+import { showNotification } from "./notifications.js";
 
 // ----------------------------
 // Confirmation de suppression avec animation
@@ -33,7 +14,6 @@ function showConfirm(callbackYes) {
     const btnYes = document.getElementById("confirm-yes");
     const btnNo = document.getElementById("confirm-no");
 
-    // Affiche le conteneur et déclenche l’animation
     confirmContainer.style.display = "flex";
     setTimeout(() => confirmContainer.classList.add("show"), 10);
 
@@ -41,7 +21,7 @@ function showConfirm(callbackYes) {
         confirmContainer.classList.remove("show");
         setTimeout(() => {
             confirmContainer.style.display = "none";
-        }, 300); // temps de l'animation
+        }, 300);
         btnYes.removeEventListener("click", yesHandler);
         btnNo.removeEventListener("click", noHandler);
     };
@@ -55,7 +35,6 @@ function showConfirm(callbackYes) {
     btnYes.addEventListener("click", yesHandler);
     btnNo.addEventListener("click", noHandler);
 }
-
 
 // ----------------------------
 // Affichage de l'accueil
@@ -86,10 +65,10 @@ function afficherBoutonsHeader() {
             <button class="btn" id="openPopup">Référencer mon site</button>
         `;
 
-        // Déconnexion
         document.getElementById("logoutBtn").addEventListener("click", () => {
             localStorage.removeItem("token");
             localStorage.removeItem("user");
+            showNotification("Vous êtes déconnecté !", "success");
             location.reload();
         });
 
@@ -253,7 +232,6 @@ function activerFormulaireAjout() {
             afficherAccueil();
 
         } catch (err) {
-            console.error(err);
             showNotification("Erreur : " + err.message, "error");
         }
     });

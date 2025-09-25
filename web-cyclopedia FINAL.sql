@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1
--- Généré le : jeu. 18 sep. 2025 à 13:48
+-- Généré le : mar. 23 sep. 2025 à 21:18
 -- Version du serveur : 10.4.32-MariaDB
 -- Version de PHP : 8.2.12
 
@@ -114,7 +114,9 @@ INSERT INTO `sites` (`id`, `nom`, `url`, `description`, `date_ajout`, `image`, `
 (57, 'Lost Ark', 'https://www.playlostark.com/fr-fr', 'MMORPG d\'action isométrique avec un monde vaste et des combats dynamiques. Mélange de PvE et de PvP avec une grande variété de classes.', '2025-09-11 00:00:00', 'http://127.0.0.1:5500/FrontEnd\\DossierImages\\LogoSitecard\\LoLA-logo2.png', 1, 3, 58),
 (58, 'education.gouv.fr', 'https://www.education.gouv.fr/', 'Site officiel du ministère de l’Éducation national', '2025-09-11 00:00:00', 'http://localhost:5500/FrontEnd/DossierImages/LogoSitecard/MENESR.png', 1, 2, 58),
 (59, 'Nasa', 'https://www.nasa.gov/', 'Le site de la NASA offre un accès complet aux actualités, missions, découvertes scientifiques et ressources multimédias liées à l’exploration spatiale américaine.', '2025-09-15 16:08:44', 'http://127.0.0.1:5500/FrontEnd\\DossierImages\\LogoSitecard\\NasaLogo.png', 1, 1, 49),
-(60, 'Hopital Gui de Chauliac', 'https://www.chu-montpellier.fr/fr/a-propos-du-chu/', 'Grand centre hospitalier universitaire spécialisé à Montpellier.', '2025-09-15 16:16:44', 'http://127.0.0.1:5500/FrontEnd\\DossierImages\\LogoSitecard\\téléchargement.jpg', 1, 1, 50);
+(60, 'Hopital Gui de Chauliac', 'https://www.chu-montpellier.fr/fr/a-propos-du-chu/', 'Grand centre hospitalier universitaire spécialisé à Montpellier.', '2025-09-15 16:16:44', 'http://127.0.0.1:5500/FrontEnd\\DossierImages\\LogoSitecard\\téléchargement.jpg', 1, 1, 50),
+(74, 'AFPA', 'https://www.afpa.fr/', 'Organisme de formation ', '2025-09-23 21:12:38', NULL, NULL, 2, 60),
+(75, 'Xampp', 'https://www.apachefriends.org/fr/download.html', 'XAMPP est une distribution Apache facile à installer. Elle contient MySQL, PHP et Perl. Il suffit de télécharger et de lancer l\'installateur.', '2025-09-23 21:15:02', NULL, NULL, 1, 71);
 
 -- --------------------------------------------------------
 
@@ -147,7 +149,10 @@ INSERT INTO `utilisateurs` (`id_utilisateur`, `nom`, `prénom`, `email`, `mot_de
 (56, 'Roux', 'Marc', 'marc.roux@example.com', 'marcpass', '2025-09-08 16:24:51', 1),
 (57, 'Garnier', 'Laura', 'laura.garnier@example.com', 'laurapass', '2025-09-08 16:24:51', 2),
 (58, 'Faure', 'David', 'david.faure@example.com', 'davidpass', '2025-09-08 16:24:51', 1),
-(59, 'Mader', 'Nicolas', 'Nicolasgoonerdelacave@exemple.com', '$2b$10$kx7h7U/FYpQjFibaHoNgKeNclQ0W4U8OQh8Eb99Ic21xmgWiOXKWO', '2025-09-11 14:56:27', 1);
+(60, 'aymeric', 'jeanjean', 'aymeric.34@hotmail.fr', '$2b$10$Xovi4TmvvcRbVm.94mwkO.kGtFx0hMdmiLtEojcjMUtgEEr4lBTti', '2025-09-23 10:11:05', 3),
+(61, 'eni', 'ganbat', 'eni@hotmail.fr', '$2b$10$p1sBCqS5qqBQX0V0C1YLtePJKTWm1ByFQKP0HYkZxdCjmAM.ic566', '2025-09-23 10:15:45', 3),
+(62, 'mader', 'nicolas', 'goongoon@hotmail.fr', '$2b$10$p1pqdjChkgL0eKi5vgSBsOW54tU442VtVyMgQG.hGY4HPzTN38H82', '2025-09-23 10:22:56', 3),
+(71, 'birot', 'christophe', 'chris@hotmail.fr', '$2b$10$ImIYHQFkfyzBzBRP1GgfEu3qRvJ4XDwsggAjFL8B/dST6ikIjUsea', '2025-09-23 12:04:37', 3);
 
 --
 -- Index pour les tables déchargées
@@ -207,13 +212,13 @@ ALTER TABLE `role`
 -- AUTO_INCREMENT pour la table `sites`
 --
 ALTER TABLE `sites`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=70;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=76;
 
 --
 -- AUTO_INCREMENT pour la table `utilisateurs`
 --
 ALTER TABLE `utilisateurs`
-  MODIFY `id_utilisateur` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=60;
+  MODIFY `id_utilisateur` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=72;
 
 --
 -- Contraintes pour les tables déchargées
