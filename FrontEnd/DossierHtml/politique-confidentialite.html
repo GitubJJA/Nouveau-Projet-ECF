@@ -4,26 +4,45 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Politique de confidentialité</title>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="../DossierCss/rgpd.css">
 </head>
-<body>
-<header>
-  <h1>Politique de confidentialité</h1>
-</header>
-<main>
-  <section>
-    <p>Votre vie privée est importante pour nous. Voici comment nous collectons et utilisons vos données :</p>
-    <ul>
-      <li>Nous collectons : email, nom, mot de passe, URL du site, description, catégorie.</li>
-      <li>Les données sont utilisées uniquement pour afficher, modifier ou supprimer vos sites.</li>
-      <li>Les données sont stockées en toute sécurité sur notre serveur.</li>
-      <li>Vous pouvez demander la modification ou suppression de vos données à tout moment.</li>
-      <li>Nous ne partageons pas vos données avec des tiers.</li>
-    </ul>
-  </section>
-</main>
-<footer>
-  <p>&copy; 2025 VotreSite - Tous droits réservés</p>
-</footer>
+<body class="rgpd-page">
+  <header>
+    <h1>Politique de confidentialité</h1>
+  </header>
+
+  <main>
+    <div class="rgpd-container">
+      <section>
+        <h2>Votre vie privée</h2>
+        <p>Votre vie privée est importante pour nous. Voici comment nous collectons et utilisons vos données :</p>
+        <ul>
+          <li>Nous collectons : email, nom, mot de passe, URL du site, description, catégorie.</li>
+          <li>Les données sont utilisées uniquement pour afficher, modifier ou supprimer vos sites.</li>
+          <li>Les données sont stockées en toute sécurité sur notre serveur.</li>
+          <li>Vous pouvez demander la modification ou suppression de vos données à tout moment.</li>
+          <li>Nous ne partageons pas vos données avec des tiers.</li>
+        </ul>
+      </section>
+
+      <section class="rgpd-consent-section">
+        <div class="rgpd-checkbox">
+          <input type="checkbox" id="rgpd-consent" required>
+          <label for="rgpd-consent">
+            J'accepte que mes données soient utilisées pour le traitement des informations de mon site.
+          </label>
+        </div>
+        <button class="btn" id="rgpd-accept">Accepter</button>
+      </section>
+
+      <section>
+        <p>Pour en savoir plus, consultez notre <a href="#">Politique de confidentialité complète</a>.</p>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 VotreSite - Tous droits réservés</p>
+  </footer>
 </body>
 </html>

@@ -65,6 +65,40 @@ header {
   animation: neonGradient 6s linear infinite, neonGlow 2.5s ease-in-out infinite alternate;
 }
 
+#userEmail {
+  font-weight: 600;
+  font-size: 1rem;
+  /* Dégradé subtil initial */
+  background: linear-gradient(
+    90deg,
+    #a1f1c6 0%,
+    #b0f4c9 20%,
+    #9cf0b8 40%,
+    #a1f1c6 60%,
+    #b0f4c9 80%,
+    #9cf0b8 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  /* Animation du dégradé et de la luminosité */
+  animation: neonGradientUser 6s linear infinite, neonGlowUser 2.5s ease-in-out infinite alternate;
+}
+
+@keyframes neonGradientUser {
+  0% { background-position: 0% 0%; }
+  50% { background-position: 100% 0%; }
+  100% { background-position: 0% 0%; }
+}
+
+@keyframes neonGlowUser {
+  0% { filter: brightness(1); text-shadow: 0 0 3px rgba(161, 241, 198, 0.4); }
+  25% { filter: brightness(1.05); text-shadow: 0 0 4px rgba(161, 241, 198, 0.45); }
+  50% { filter: brightness(1); text-shadow: 0 0 3.5px rgba(161, 241, 198, 0.42); }
+  75% { filter: brightness(1.03); text-shadow: 0 0 5px rgba(161, 241, 198, 0.48); }
+  100% { filter: brightness(1); text-shadow: 0 0 3px rgba(161, 241, 198, 0.4); }
+}
+
 /* Déplacement subtil du dégradé */
 @keyframes neonGradient {
   0% { background-position: 0% 0%; }
@@ -370,6 +404,30 @@ header {
 .site-card.visible {
   opacity: 1;
   transform: translateY(0);
+}
+
+/* Liens "Visiter le site" avec effet neon basé sur la couleur du header */
+.site-card a.transformText {
+  background: linear-gradient(90deg, #08403f, #0d6b64, #08403f); /* Couleurs header */
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-size: 200% 100%;
+  animation: neonLinkHeader 8s linear infinite;
+  text-decoration: none;
+  font-weight: 600;
+  transition: transform 0.3s ease;
+}
+
+.site-card a.transformText:hover {
+  transform: scale(1.05);
+  text-shadow: 0 0 10px rgba(8, 64, 63, 0.6),
+               0 0 20px rgba(13, 107, 100, 0.4);
+}
+
+@keyframes neonLinkHeader {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 .actions {

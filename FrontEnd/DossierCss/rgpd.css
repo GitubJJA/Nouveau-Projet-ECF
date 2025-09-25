@@ -1,0 +1,128 @@
+/* ===== PAGE RGPD ===== */
+body.rgpd-page {
+  font-family: "Exo 2", sans-serif;
+  background: #f5ede0; /* fond clair comme accueil */
+  color: #08403f;       /* texte principal en couleur header */
+  padding: 30px;
+}
+
+/* Conteneur central RGPD */
+.rgpd-container {
+  max-width: 900px;
+  margin: 0 auto;
+  background: rgba(8,64,63,0.8);
+  backdrop-filter: blur(16px);
+  border-radius: 20px;
+  border: 1px solid rgba(0,255,128,0.2);
+  padding: 30px;
+  box-shadow: 0 8px 25px rgba(0,255,128,0.3);
+  color: #a1f1c6;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Titres */
+.rgpd-container h1,
+.rgpd-container h2 {
+  font-size: 1.8em;
+  font-weight: bold;
+  text-transform: uppercase;
+  background: linear-gradient(90deg, #a1f1c6 0%, #b0f4c9 40%, #9cf0b8 60%, #a1f1c6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-size: 200% 100%;
+  animation: neonGradient 6s linear infinite, neonGlow 2.5s ease-in-out infinite alternate;
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+/* Paragraphes */
+.rgpd-container p {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #d4f9e1;
+}
+
+/* Liens */
+.rgpd-container a {
+  color: #00ffaa;
+  text-decoration: underline;
+  transition: color 0.3s ease;
+}
+
+.rgpd-container a:hover {
+  color: #39ff14;
+}
+
+.rgpd-container a:active {
+  color: #a1f1c6;
+}
+
+/* Checkbox RGPD */
+.rgpd-container .rgpd-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.95rem;
+  margin-top: 10px;
+}
+
+.rgpd-container .rgpd-checkbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #00ffaa;
+}
+
+/* Boutons */
+.rgpd-container .btn {
+  align-self: flex-start;
+  background: linear-gradient(135deg, #0d0d0d, #1a1a1d);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0,255,128,0.2);
+  position: relative;
+  margin-top: 15px;
+}
+
+.rgpd-container .btn:hover {
+  color: #0d0d0d;
+  background: linear-gradient(135deg, #39ff14, #00ffaa);
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(0,255,128,0.6), 0 0 40px rgba(0,255,128,0.3);
+  animation: pulse 1.5s infinite;
+}
+
+/* Animations partagées */
+@keyframes neonGradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes neonGlow {
+  0% { filter: brightness(1); text-shadow: 0 0 4px rgba(161,241,198,0.4); }
+  25% { filter: brightness(1.05); text-shadow: 0 0 6px rgba(161,241,198,0.45); }
+  50% { filter: brightness(1); text-shadow: 0 0 5px rgba(161,241,198,0.42); }
+  75% { filter: brightness(1.03); text-shadow: 0 0 7px rgba(161,241,198,0.48); }
+  100% { filter: brightness(1); text-shadow: 0 0 4px rgba(161,241,198,0.4); }
+}
+
+/* Responsive simple */
+@media (max-width: 768px) {
+  .rgpd-container { padding: 20px; }
+  .rgpd-container h1, .rgpd-container h2 { font-size: 1.5em; }
+  .rgpd-container p { font-size: 0.95em; }
+  .rgpd-container .btn { padding: 8px 16px; font-size: 0.9em; }
+}
+
+@media (max-width: 480px) {
+  .rgpd-container { padding: 15px; }
+  .rgpd-container h1, .rgpd-container h2 { font-size: 1.3em; }
+  .rgpd-container p { font-size: 0.9em; }
+  .rgpd-container .btn { padding: 7px 14px; font-size: 0.85em; }
+}
