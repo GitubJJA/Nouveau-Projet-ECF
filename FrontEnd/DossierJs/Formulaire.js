@@ -4,10 +4,11 @@
 // ----------------------------
 
 // Injecte le formulaire UNE FOIS au chargement
-export function injecterFormulaire() {
+export async function injecterFormulaire() {
     const addSiteForm = document.getElementById("addSiteForm");
     if (!addSiteForm) return;
 
+    // HTML de base du formulaire sans le select dynamique
     addSiteForm.innerHTML = `
         <label for="siteName">Nom du site :</label>
         <input type="text" id="siteName" name="siteName" placeholder="Ex: MonSiteWeb" required>
@@ -17,17 +18,39 @@ export function injecterFormulaire() {
         <label for="category">Catégorie :</label>
         <select id="category" name="category" required>
             <option value="">Sélectionnez une catégorie</option>
-            <option value="1">Technologie</option>
-            <option value="2">Éducation</option>
-            <option value="3">Loisirs</option>
         </select>
 
         <label for="description">Description :</label>
         <textarea id="description" name="description" placeholder="Une courte description" rows="3" required></textarea>
-
         <button type="submit" id="submitBtn" class="btn">Ajouter le site</button>
+        <div class="rgpd-checkbox">
+        <input type="checkbox" id="rgpd-consent" required>
+        <label for="rgpd-consent">
+        J'accepte que mes données soient utilisées pour le traitement des informations de mon site.
+        </label>
+        </div>
     `;
+
+    const categorySelect = document.getElementById("category");
+
+    try {
+        const response = await fetch('http://localhost:3001/api/categories'); // ton endpoint
+        if (!response.ok) throw new Error("Erreur lors de la récupération des catégories");
+
+        const categories = await response.json();
+
+        // Injection dynamique des options
+        categories.forEach(cat => {
+            const option = document.createElement("option");
+            option.value = cat.id_categorie;
+            option.textContent = cat.nom;
+            categorySelect.appendChild(option);
+        });
+    } catch (error) {
+        console.error("Impossible de charger les catégories :", error);
+    }
 }
+
 
 // Affiche le popup et pré-remplit si mode modification
 export function afficherPopUp(editingSite = null) {

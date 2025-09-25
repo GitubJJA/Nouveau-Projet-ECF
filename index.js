@@ -6,6 +6,7 @@ import { fileURLToPath } from "url";
 import apiSitesRouter from './BackEnd/routes/apiSites.js';
 import apiUserRouter  from './BackEnd/routes/apiUser.js';
 import { signupUser, loginUser } from './BackEnd/controllers/usersController.js';
+import apiCategoryRouter from './BackEnd/routes/apiCategory.js';
 import cors from 'cors';
 
 
@@ -64,6 +65,7 @@ app.post("/api/login", loginUser);
 // Monter le routeurs API
 app.use('/api/sites', apiSitesRouter);
 app.use('/api/users', apiUserRouter);
+app.use('/api/categories', apiCategoryRouter);
 
 
 // 404 handler

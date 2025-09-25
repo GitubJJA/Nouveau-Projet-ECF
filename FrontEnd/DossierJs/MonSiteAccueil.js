@@ -3,11 +3,11 @@
 // ----------------------------
 import { sites, loadSites } from "../data/sites.js";
 import { injecterFormulaire, popupMovements } from "./Formulaire.js";
-import { filtrerSitesParRecherche, filtrerParCategorie } from "../Dossier Scripts/FiltreTriage.js";
+import { filtrerSitesParRecherche, filtrerParCategorie} from "../Dossier Scripts/FiltreTriage.js";
 import { showNotification } from "./notifications.js";
 
 // ----------------------------
-// Confirmation de suppression avec animation
+// Confirmation de suppression
 // ----------------------------
 function showConfirm(callbackYes) {
     const confirmContainer = document.getElementById("confirm-container");
@@ -19,17 +19,12 @@ function showConfirm(callbackYes) {
 
     const cleanup = () => {
         confirmContainer.classList.remove("show");
-        setTimeout(() => {
-            confirmContainer.style.display = "none";
-        }, 300);
+        setTimeout(() => { confirmContainer.style.display = "none"; }, 300);
         btnYes.removeEventListener("click", yesHandler);
         btnNo.removeEventListener("click", noHandler);
     };
 
-    const yesHandler = () => {
-        cleanup();
-        callbackYes();
-    };
+    const yesHandler = () => { cleanup(); callbackYes(); };
     const noHandler = () => cleanup();
 
     btnYes.addEventListener("click", yesHandler);
@@ -51,7 +46,7 @@ function afficherAccueil() {
 }
 
 // ----------------------------
-// Boutons Connexion / Inscription / Référencer
+// Boutons header
 // ----------------------------
 function afficherBoutonsHeader() {
     const buttonsContainer = document.querySelector(".buttons");
@@ -64,17 +59,13 @@ function afficherBoutonsHeader() {
             <button class="btn" id="logoutBtn">Déconnexion</button>
             <button class="btn" id="openPopup">Référencer mon site</button>
         `;
-
         document.getElementById("logoutBtn").addEventListener("click", () => {
             localStorage.removeItem("token");
             localStorage.removeItem("user");
             showNotification("Vous êtes déconnecté !", "success");
             location.reload();
         });
-
-        // Notification connexion réussie
         showNotification("Connexion réussie !", "success");
-
     } else {
         buttonsContainer.innerHTML = `
             <a class="btn" href="login.html" rel="noopener noreferrer">Connexion</a>
@@ -84,7 +75,7 @@ function afficherBoutonsHeader() {
 }
 
 // ----------------------------
-// Variable globale pour mode édition
+// Variable globale mode édition
 // ----------------------------
 let editingSiteId = null;
 
@@ -113,14 +104,10 @@ function afficherSites(sitesToShow = sites) {
 
     document.querySelector(".main-content").innerHTML = mainPage;
 
-    // Animation d’apparition
     setTimeout(() => {
-        document.querySelectorAll('.site-card').forEach(card => {
-            card.classList.add('visible');
-        });
+        document.querySelectorAll('.site-card').forEach(card => card.classList.add('visible'));
     }, 10);
 
-    // Écouteurs des boutons update
     document.querySelectorAll('.update-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const siteId = Number(e.target.dataset.id);
@@ -129,7 +116,6 @@ function afficherSites(sitesToShow = sites) {
         });
     });
 
-    // Écouteurs des boutons delete
     document.querySelectorAll('.delete-btn').forEach(btn => {
         btn.addEventListener('click', async (e) => {
             const siteId = Number(e.target.dataset.id);
@@ -143,7 +129,6 @@ function afficherSites(sitesToShow = sites) {
                         headers: { "Authorization": `Bearer ${token}` }
                     });
                     if (!res.ok) throw new Error("Erreur lors de la suppression");
-
                     showNotification("Site supprimé !", "success");
                     await loadSites();
                     afficherAccueil();
@@ -156,14 +141,12 @@ function afficherSites(sitesToShow = sites) {
 }
 
 // ----------------------------
-// Ouvre le formulaire en mode modification
+// Formulaire modification
 // ----------------------------
 function ouvrirFormulaireUpdate(site) {
     editingSiteId = site.id;
-
     const form = document.getElementById("popupForm");
     form.style.display = "block";
-
     document.getElementById("siteName").value = site.name;
     document.getElementById("description").value = site.description;
     document.getElementById("url").value = site.url;
@@ -172,7 +155,7 @@ function ouvrirFormulaireUpdate(site) {
 }
 
 // ----------------------------
-// Formulaire d'ajout / modification
+// Formulaire ajout / modification
 // ----------------------------
 function activerFormulaireAjout() {
     const addSiteForm = document.getElementById("addSiteForm");
@@ -180,7 +163,11 @@ function activerFormulaireAjout() {
 
     addSiteForm.addEventListener("submit", async (e) => {
         e.preventDefault();
-
+        // Vérification consentement RGPD
+    const consent = document.getElementById("rgpd-consent");
+    if (!consent.checked) {
+        return showNotification("Vous devez accepter la collecte des données pour continuer.", "error");
+    }
         const user = JSON.parse(localStorage.getItem("user"));
         if (!user) return showNotification("Vous devez être connecté !", "error");
 
@@ -199,19 +186,13 @@ function activerFormulaireAjout() {
             if (editingSiteId) {
                 res = await fetch(`http://localhost:3001/api/sites/${editingSiteId}`, {
                     method: "PATCH",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": token ? `Bearer ${token}` : ""
-                    },
+                    headers: { "Content-Type": "application/json", "Authorization": token ? `Bearer ${token}` : "" },
                     body: JSON.stringify(siteData)
                 });
             } else {
                 res = await fetch("http://localhost:3001/api/sites", {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": token ? `Bearer ${token}` : ""
-                    },
+                    headers: { "Content-Type": "application/json", "Authorization": token ? `Bearer ${token}` : "" },
                     body: JSON.stringify(siteData)
                 });
             }
@@ -223,11 +204,9 @@ function activerFormulaireAjout() {
 
             showNotification(editingSiteId ? "Site modifié !" : "Site ajouté !", "success");
             document.getElementById("popupForm").style.display = "none";
-
             addSiteForm.reset();
             editingSiteId = null;
             document.getElementById("submitBtn").textContent = "Ajouter un site";
-
             await loadSites();
             afficherAccueil();
 
@@ -238,29 +217,155 @@ function activerFormulaireAjout() {
 }
 
 // ----------------------------
-// Initialisation de la page
+// Sidebar desktop
+// ----------------------------
+async function injectSidebar() {
+    const sidebar = document.querySelector(".sidebar");
+    if (!sidebar) return;
+
+    sidebar.innerHTML = `
+        <h2>Catégories</h2>
+        <ul class="asideNav asideNav2" id="categoryList">
+            <li><a href="#" data-category="all" class="active">Accueil</a></li>
+            <li>Chargement...</li>
+        </ul>
+
+        <h2>Sites Populaires</h2>
+        <ul class="asideNav">
+            <li><a target="_blank" rel="noopener noreferrer" href="https://www.google.fr/">Google</a></li>
+            <li><a target="_blank" rel="noopener noreferrer" href="https://www.youtube.com/?app=desktop&hl=FR">YouTube</a></li>
+            <li><a target="_blank" rel="noopener noreferrer" href="https://fr.wikipedia.org/wiki/Wikip%C3%A9dia:Accueil_principal">Wikipedia</a></li>
+        </ul>
+    `;
+
+    const categoryList = document.getElementById("categoryList");
+
+    try {
+        const response = await fetch("http://localhost:3001/api/categories");
+        if (!response.ok) throw new Error("Impossible de charger les catégories");
+        const categories = await response.json();
+
+        // Réinitialise la liste avec "Accueil"
+        categoryList.innerHTML = `<li><a href="#" data-category="all" class="active">Accueil</a></li>`;
+        categories.forEach(cat => {
+            const li = document.createElement("li");
+            li.innerHTML = `<a href="#" data-category="${cat.nom}">${cat.nom}</a>`;
+            categoryList.appendChild(li);
+        });
+
+        // Ajout des event listeners avec gestion de la classe active
+        document.querySelectorAll('#categoryList a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+
+                // Filtrer les sites selon la catégorie
+                filtrerParCategorie(e, sites, afficherAccueil, afficherSites);
+
+                // Supprimer la classe active à tous les liens
+                document.querySelectorAll('#categoryList a').forEach(l => l.classList.remove('active'));
+
+                // Ajouter la classe active au lien cliqué
+                link.classList.add('active');
+            });
+        });
+    } catch (error) {
+        categoryList.innerHTML += `<li style="color:red;">Erreur de chargement</li>`;
+        console.error(error);
+    }
+}
+
+
+// ----------------------------
+// Main-nav responsive
+// ----------------------------
+function injectMainNav() {
+    const mainNavContainer = document.querySelector(".main-nav");
+    if (!mainNavContainer) return;
+
+    if (window.innerWidth >= 780) {
+        // Desktop menu "À propos / Nous contacter"
+        mainNavContainer.innerHTML = `
+            <ul class="nav-info">
+                <li><a href="#">À propos</a></li>
+                <li><a href="#">Nous contacter</a></li>
+            </ul>
+        `;
+    } else {
+        // Mobile menu catégories
+        mainNavContainer.innerHTML = `
+            <ul class="nav-list" id="mainNavList">
+                <li><a href="#" data-category="all">Accueil</a></li>
+                <li>Chargement...</li>
+            </ul>
+        `;
+        const mainNavList = document.getElementById("mainNavList");
+
+        fetch("http://localhost:3001/api/categories")
+            .then(res => res.ok ? res.json() : Promise.reject("Erreur catégories"))
+            .then(categories => {
+                mainNavList.innerHTML = `<li><a href="#" data-category="all">Accueil</a></li>`;
+                categories.forEach(cat => {
+                    const li = document.createElement("li");
+                    li.innerHTML = `<a href="#" data-category="${cat.nom}">${cat.nom}</a>`;
+                    mainNavList.appendChild(li);
+                });
+                document.querySelectorAll('#mainNavList a').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        filtrerParCategorie(e, sites, afficherAccueil, afficherSites);
+                    });
+                });
+            })
+            .catch(err => {
+                mainNavList.innerHTML += `<li style="color:red;">Erreur de chargement</li>`;
+                console.error(err);
+            });
+    }
+}
+
+// ----------------------------
+// Navigation adaptative
+// ----------------------------
+function initNavigation() {
+    if (window.innerWidth < 780) {
+        injectMainNav();
+        document.querySelector(".sidebar")?.classList.add("hidden");
+    } else {
+        injectMainNav();
+        injectSidebar();
+        document.querySelector(".sidebar")?.classList.remove("hidden");
+    }
+}
+
+// ----------------------------
+// Initialisation page
 // ----------------------------
 afficherAccueil();
 afficherBoutonsHeader();
 injecterFormulaire();
 popupMovements();
 activerFormulaireAjout();
+initNavigation();
+window.addEventListener("resize", initNavigation);
 
 // ----------------------------
-// Filtres
+// Filtre recherche
 // ----------------------------
 document.querySelector('.search-box input').addEventListener('input', function() {
-    filtrerSitesParRecherche(this.value, afficherAccueil, afficherSites);
-});
+    const value = this.value.trim();
 
-document.querySelectorAll('.nav-list a').forEach(link => {
-    link.addEventListener('click', function(e) {
-        filtrerParCategorie(e, sites, afficherAccueil, afficherSites);
-    });
-});
+    if (value === '') {
+        // Réaffiche l'accueil
+        afficherAccueil();
 
-document.querySelectorAll('.asideNav2 a').forEach(link => {
-    link.addEventListener('click', function(e) {
-        filtrerParCategorie(e, sites, afficherAccueil, afficherSites);
-    });
+        // Remet la catégorie active sur "Accueil"
+        const categoryLinks = document.querySelectorAll('#categoryList a');
+        categoryLinks.forEach(link => link.classList.remove('active'));
+
+        const accueilLink = document.querySelector('#categoryList a[data-category="all"]');
+        if (accueilLink) accueilLink.classList.add('active');
+
+    } else {
+        filtrerSitesParRecherche(value, afficherAccueil, afficherSites);
+    }
 });
