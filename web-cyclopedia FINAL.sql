@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1
--- Généré le : mar. 23 sep. 2025 à 21:18
+-- Généré le : jeu. 25 sep. 2025 à 22:44
 -- Version du serveur : 10.4.32-MariaDB
 -- Version de PHP : 8.2.12
 
@@ -116,7 +116,12 @@ INSERT INTO `sites` (`id`, `nom`, `url`, `description`, `date_ajout`, `image`, `
 (59, 'Nasa', 'https://www.nasa.gov/', 'Le site de la NASA offre un accès complet aux actualités, missions, découvertes scientifiques et ressources multimédias liées à l’exploration spatiale américaine.', '2025-09-15 16:08:44', 'http://127.0.0.1:5500/FrontEnd\\DossierImages\\LogoSitecard\\NasaLogo.png', 1, 1, 49),
 (60, 'Hopital Gui de Chauliac', 'https://www.chu-montpellier.fr/fr/a-propos-du-chu/', 'Grand centre hospitalier universitaire spécialisé à Montpellier.', '2025-09-15 16:16:44', 'http://127.0.0.1:5500/FrontEnd\\DossierImages\\LogoSitecard\\téléchargement.jpg', 1, 1, 50),
 (74, 'AFPA', 'https://www.afpa.fr/', 'Organisme de formation ', '2025-09-23 21:12:38', NULL, NULL, 2, 60),
-(75, 'Xampp', 'https://www.apachefriends.org/fr/download.html', 'XAMPP est une distribution Apache facile à installer. Elle contient MySQL, PHP et Perl. Il suffit de télécharger et de lancer l\'installateur.', '2025-09-23 21:15:02', NULL, NULL, 1, 71);
+(75, 'Xampp', 'https://www.apachefriends.org/fr/download.html', 'XAMPP est une distribution Apache facile à installer. Elle contient MySQL, PHP et Perl. Il suffit de télécharger et de lancer l\'installateur.', '2025-09-23 21:15:02', NULL, NULL, 1, 71),
+(76, 'MLI Hérault', 'https://mlicentreherault.fr/', 'La Mission Locale du Centre Hérault est un lieu d\'accueil, d\'écoute et d\'accompagnement des jeunes de 16 à 25 ans', '2025-09-23 21:22:22', NULL, NULL, 2, 60),
+(79, 'Github', 'https://github.com/', 'tech ', '2025-09-25 20:26:49', NULL, NULL, 1, 60),
+(80, 'Chatgpt', 'https://chatgpt.com/?openaicom_referred=true', 'peut aider ou induire en erreur', '2025-09-25 20:29:16', NULL, NULL, 1, 60),
+(81, 'Claude', 'https://claude.ai/login?returnTo=%2F%3F', 'autre ia tout aussi douteuse', '2025-09-25 20:30:21', NULL, NULL, 1, 60),
+(82, 'quenelle ', 'https://www.123degustez.fr/recettes/recettes-salee', 'huihhoh', '2025-09-25 22:25:44', NULL, NULL, 3, 60);
 
 -- --------------------------------------------------------
 
@@ -152,7 +157,8 @@ INSERT INTO `utilisateurs` (`id_utilisateur`, `nom`, `prénom`, `email`, `mot_de
 (60, 'aymeric', 'jeanjean', 'aymeric.34@hotmail.fr', '$2b$10$Xovi4TmvvcRbVm.94mwkO.kGtFx0hMdmiLtEojcjMUtgEEr4lBTti', '2025-09-23 10:11:05', 3),
 (61, 'eni', 'ganbat', 'eni@hotmail.fr', '$2b$10$p1sBCqS5qqBQX0V0C1YLtePJKTWm1ByFQKP0HYkZxdCjmAM.ic566', '2025-09-23 10:15:45', 3),
 (62, 'mader', 'nicolas', 'goongoon@hotmail.fr', '$2b$10$p1pqdjChkgL0eKi5vgSBsOW54tU442VtVyMgQG.hGY4HPzTN38H82', '2025-09-23 10:22:56', 3),
-(71, 'birot', 'christophe', 'chris@hotmail.fr', '$2b$10$ImIYHQFkfyzBzBRP1GgfEu3qRvJ4XDwsggAjFL8B/dST6ikIjUsea', '2025-09-23 12:04:37', 3);
+(71, 'birot', 'christophe', 'chris@hotmail.fr', '$2b$10$ImIYHQFkfyzBzBRP1GgfEu3qRvJ4XDwsggAjFL8B/dST6ikIjUsea', '2025-09-23 12:04:37', 3),
+(73, 'Taleb', 'Belkacem', 'Taleb@hotmail.fr', '$2b$10$hlc5bjk2Klj4yqkE7NLSk.fPyvw.GiDM5fKoto73kcZfLHOabglca', '2025-09-25 12:08:59', 3);
 
 --
 -- Index pour les tables déchargées
@@ -212,13 +218,13 @@ ALTER TABLE `role`
 -- AUTO_INCREMENT pour la table `sites`
 --
 ALTER TABLE `sites`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=76;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=83;
 
 --
 -- AUTO_INCREMENT pour la table `utilisateurs`
 --
 ALTER TABLE `utilisateurs`
-  MODIFY `id_utilisateur` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=72;
+  MODIFY `id_utilisateur` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=74;
 
 --
 -- Contraintes pour les tables déchargées
