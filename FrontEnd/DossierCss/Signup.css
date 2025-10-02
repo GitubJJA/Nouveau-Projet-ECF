@@ -3,12 +3,21 @@
 
 
 body {
-    font-family: Arial, sans-serif;
+    font-family: "Exo 2", sans-serif;
     background-color: rgb(245, 237, 224);
     margin: 0;
     color: black;
 }
 
+header {
+    display: grid;
+    grid-template-areas:
+        "logo title"
+        "logo paragraph title";
+    grid-template-columns: 1fr 3fr 1fr;
+    text-align: center;
+    margin-bottom: 20px;
+}
 
 .form-container {
 font-weight: bold;

@@ -21,12 +21,12 @@ header {
   grid-template-areas:
       "logo title buttons"
       "logo paragraph buttons";
-  grid-template-columns: 1fr 3fr 1fr;
+  grid-template-columns: 1.5fr 3fr 1fr;
   background: #08403f;
   backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(0,255,128,0.15);
   color: #a1f1c6;
-  padding: 20px;
+  padding: 10px;
   text-align: center;
   box-shadow: 0 4px 20px rgba(0,0,0,0.6);
 }
@@ -121,20 +121,33 @@ header {
 .paragraph {
   grid-area: paragraph;
   font-size: 1.2em;
-  margin-top: 10px;
   color: #a1f1c6;
 }
 
-.buttons {
-  grid-area: buttons;
+.user {
   display: flex;
-  row-gap: 1em;
-  flex-direction: column;
+  flex-direction: column;  /* empile userEmail + buttons */
   align-items: center;
+  gap: 1em; /* espace entre email et boutons */
 }
+
+.buttons { 
+  display: flex;
+  flex-direction: row;     /* boutons côte à côte */
+  gap: 1em;                /* espace horizontal entre les deux */
+  justify-content: center; /* centre les boutons dans le conteneur */
+  align-items: center;     /* aligne verticalement */
+}
+
+
 
 /* ===== BOUTONS ===== */
 .btn {
+  display: flex;           /* pour centrer le texte */
+  align-items: center;
+  justify-content: center; /* texte bien centré */
+  min-height: 2em;         /* fixe la hauteur sans écraser */
+  padding: 0 20px;         /* fins mais confortables */
   background: linear-gradient(135deg, #0d0d0d, #1a1a1d);
   color: white;
   padding: 10px 20px;
@@ -160,7 +173,31 @@ header {
   transform: scale(0.95);
   box-shadow: none;
 }
+.btn-center {
+background: linear-gradient(135deg, #0d0d0d, #1a1a1d);
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 1em;
+  margin-left: 10px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0,255,128,0.2);
+}
 
+.btn-center:hover {
+  color: #0d0d0d;
+  background: linear-gradient(135deg, #39ff14, #00ffaa);
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(0,255,128,0.6), 0 0 40px rgba(0,255,128,0.3);
+  animation: pulse 1.5s infinite;
+}
+.btn-center:active {
+  transform: scale(0.95);
+  box-shadow: none;
+}
 @keyframes pulse {
   0% { box-shadow: 0 0 10px rgba(0,255,128,0.4); }
   50% { box-shadow: 0 0 25px rgba(0,255,128,0.8); }
@@ -174,7 +211,6 @@ header {
   padding: 15px;
   background: #08403f;
   border-bottom: 1px solid rgba(0,255,128,0.15);
-  border-radius: 8px;
   margin-bottom: 15px;
 }
 
@@ -320,7 +356,8 @@ header {
   background: rgba(8, 64, 63, 0.8);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(0,255,128,0.2);
-  border-radius: 16px;
+  border-top-right-radius: 16px;  
+  border-bottom-right-radius: 16px; 
   box-shadow: 0 6px 20px rgba(0,255,128,0.3);
   transition: all 0.3s ease;
 }

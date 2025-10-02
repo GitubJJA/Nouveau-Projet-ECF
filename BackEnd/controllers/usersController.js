@@ -112,21 +112,26 @@ export async function deleteUser(req, res, next) {
 }
 
 
-const SECRET_KEY = "TonSecretTrèsSecret123!"; // ⚠️ à mettre plus tard dans un .env
+const SECRET_KEY = "TonSecretTrèsSecret123!"; // ⚠️ à mettre dans un .env
 
 export async function loginUser(req, res, next) {
   try {
     const { email, mot_de_passe } = req.body;
-
+    console.log('Tentative de connexion avec:', { email });
+    
     if (!email || !mot_de_passe) {
+      console.log('Champs manquants');
       return res.status(400).json({ error: "missing_fields" });
     }
 
     // Vérifie l'utilisateur
     const [rows] = await pool.query("SELECT * FROM utilisateurs WHERE email = ?", [email]);
+    console.log('Utilisateur trouvé:', rows.length > 0);
+    
     if (rows.length === 0) return res.status(401).json({ error: "invalid_credentials" });
 
     const user = rows[0];
+    console.log('Role de l\'utilisateur:', user.Id_Role);
 
     // Vérifie le mot de passe
     const valid = await bcrypt.compare(mot_de_passe, user.mot_de_passe);
@@ -134,15 +139,20 @@ export async function loginUser(req, res, next) {
 
     // Crée un token
     const token = jwt.sign(
-      { id_utilisateur: user.id_utilisateur, email: user.email },
+      { id_utilisateur: user.id_utilisateur, email: user.email, Id_Role: user.Id_Role },
       SECRET_KEY,
       { expiresIn: "2h" }
     );
 
+    // 🔥 Ici on ajoute Id_Role à la réponse pour le frontend
     res.json({
       message: "Connexion réussie",
       token,
-      user: { id_utilisateur: user.id_utilisateur, email: user.email }
+      user: { 
+        id_utilisateur: user.id_utilisateur, 
+        email: user.email,
+        Id_Role: user.Id_Role 
+      }
     });
   } catch (err) {
     next(err);

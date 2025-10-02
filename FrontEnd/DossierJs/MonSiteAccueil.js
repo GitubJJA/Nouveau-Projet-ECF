@@ -55,9 +55,13 @@ function afficherBoutonsHeader() {
 
     if (token && user) {
         buttonsContainer.innerHTML = `
-            <span id="userEmail">${user.email}</span>
-            <button class="btn" id="logoutBtn">Déconnexion</button>
-            <button class="btn" id="openPopup">Référencer mon site</button>
+            <div class="user">
+            <span id="userEmail"><a href="Users.html">${user.email}</a></span>
+            <div class="buttons">
+                <button class="btn" id="openPopup">Référencer mon site</button>
+                <button class="btn" id="logoutBtn">Déconnexion</button>
+            </div>
+            </div>   
         `;
         document.getElementById("logoutBtn").addEventListener("click", () => {
             localStorage.removeItem("token");

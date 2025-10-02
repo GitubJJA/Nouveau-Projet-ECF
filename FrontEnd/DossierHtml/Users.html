@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="fr"> 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Espace Utilisateur</title>
+    <link rel="icon" type="image/png" href="../DossierImages/logoSite/60f763c5-adfa-49ad-9b3c-9b5d1b5697e2detour.png">
+    <link rel="stylesheet" href="../DossierCss/MonSiteAccueil2.css">
+    <link rel="stylesheet" href="../DossierCss/Users.css">
+</head>
+<body>
+    <header>
+        <a href="MonSiteAccueil.html">
+            <img class="logo" src="../DossierImages/logoSite/60f763c5-adfa-49ad-9b3c-9b5d1b5697e2detour.png" alt="Logo du site" width="100" height="100">
+        </a>
+        <h1 class="title">Mon profil utilisateur</h1>
+    </header>
+
+    <main>
+        <form id="userForm">
+            <label for="prenom">Prénom :</label>
+            <input type="text" id="prenom" name="prenom" placeholder="Votre prénom" required>
+
+            <label for="nom">Nom :</label>
+            <input type="text" id="nom" name="nom" placeholder="Votre nom" required>
+
+            <label for="email">Adresse e-mail :</label>
+            <input type="email" id="email" name="email" placeholder="exemple@gmail.com" required>
+
+            <label for="currentPassword">Mot de passe actuel :</label>
+            <input type="password" id="currentPassword" name="currentPassword" placeholder="Votre mot de passe actuel">
+
+            <label for="newPassword">Nouveau Mot de passe :</label>
+            <input type="password" id="newPassword" name="newPassword" placeholder="Nouveau mot de passe">
+            <small class="info-text">Laissez vide si vous ne souhaitez pas changer de mot de passe</small>
+
+            <div class="btn-actions">
+                <button type="submit" class="btn-center">Mettre à jour</button>
+                <button type="button" id="deleteAccountBtn" class="btn-danger">Supprimer mon compte</button>
+            </div>
+        </form>  
+    </main>
+
+    <footer class="footer">
+        &copy; 2025 - Annuaire Web. Tous droits réservés.
+    </footer>
+
+    <div id="notification-container" class="notification-container"></div>
+
+    <div id="rgpd-banner" class="rgpd-banner">
+        <p>Nous utilisons des cookies et collectons certaines données pour améliorer votre expérience. 
+        En continuant, vous acceptez notre <a href="politique-confidentialite.html" target="_blank">politique de confidentialité</a>.
+        </p>
+        <button id="rgpd-accept" class="btn">Accepter</button>
+    </div>
+
+    <script src="../Dossier Scripts/rgpd.js" defer></script>
+    <script type="module" src="../DossierJs/MonSiteAccueil.js"></script>
+    <script type="module" src="../DossierJs/Users.js"></script>
+</body>
+</html>

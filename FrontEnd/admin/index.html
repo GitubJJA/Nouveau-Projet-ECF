@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administration - Web Cyclopedia</title>
+    <link rel="icon" type="image/png" href="../DossierImages/logoSite/60f763c5-adfa-49ad-9b3c-9b5d1b5697e2.jpg">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <img class="logo" src="../DossierImages/logoSite/60f763c5-adfa-49ad-9b3c-9b5d1b5697e2detour.png" alt="Logo du site" width="50" height="50">
+            <h1>Administration Web Cyclopedia</h1>
+            <div class="user-info">
+                <span id="adminName">Admin</span>
+                <button id="logoutBtn">Déconnexion</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <nav class="sidebar">
+            <ul>
+                <li><button class="nav-btn active" data-section="dashboard">Tableau de bord</button></li>
+                <li><button class="nav-btn" data-section="users">Utilisateurs</button></li>
+                <li><button class="nav-btn" data-section="sites">Sites</button></li>
+                <li><button class="nav-btn" data-section="categories">Catégories</button></li>
+            </ul>
+        </nav>
+
+        <main class="content">
+            <!-- Dashboard Section -->
+            <section id="dashboard" class="section active">
+                <h2>Tableau de bord</h2>
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <h3>Utilisateurs</h3>
+                        <p id="userCount">Chargement...</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Sites</h3>
+                        <p id="siteCount">Chargement...</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Sites en attente</h3>
+                        <p id="pendingSiteCount">Chargement...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Users Section -->
+            <section id="users" class="section">
+                <h2>Gestion des Utilisateurs</h2>
+                <div class="table-actions">
+                    <input type="text" id="userSearch" placeholder="Rechercher un utilisateur...">
+                    <button id="addUserBtn" class="btn-primary">Ajouter un utilisateur</button>
+                </div>
+                <div class="table-container">
+                    <table id="usersTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nom</th>
+                                <th>Prénom</th>
+                                <th>Email</th>
+                                <th>Rôle</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Sites Section -->
+            <section id="sites" class="section">
+                <h2>Gestion des Sites</h2>
+                <div class="table-actions">
+                    <input type="text" id="siteSearch" placeholder="Rechercher un site...">
+                    <button id="addSiteBtn" class="btn-primary">Ajouter un site</button>
+                </div>
+                <div class="table-container">
+                    <table id="sitesTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nom</th>
+                                <th>URL</th>
+                                <th>Catégorie</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Categories Section -->
+            <section id="categories" class="section">
+                <h2>Gestion des Catégories</h2>
+                <div class="table-actions">
+                    <input type="text" id="categorySearch" placeholder="Rechercher une catégorie...">
+                    <button id="addCategoryBtn" class="btn-primary">Ajouter une catégorie</button>
+                </div>
+                <div class="table-container">
+                    <table id="categoriesTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nom</th>
+                                <th>Description</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="userModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Utilisateur</h2>
+            <form id="userForm">
+                <input type="hidden" id="userId">
+                <div class="form-group">
+                    <label for="userNom">Nom</label>
+                    <input type="text" id="userNom" required>
+                </div>
+                <div class="form-group">
+                    <label for="userPrenom">Prénom</label>
+                    <input type="text" id="userPrenom" required>
+                </div>
+                <div class="form-group">
+                    <label for="userEmail">Email</label>
+                    <input type="email" id="userEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="userRole">Rôle</label>
+                    <select id="userRole" required>
+                        <option value="1">Administrateur</option>
+                        <option value="2">Modérateur</option>
+                        <option value="3">Utilisateur</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="userPassword">Mot de passe</label>
+                    <input type="password" id="userPassword">
+                    <small>Laissez vide pour ne pas modifier</small>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Enregistrer</button>
+                    <button type="button" class="btn-secondary close-modal">Annuler</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="siteModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Site</h2>
+            <form id="siteForm">
+                <input type="hidden" id="siteId">
+                <div class="form-group">
+                    <label for="siteName">Nom</label>
+                    <input type="text" id="siteName" required>
+                </div>
+                <div class="form-group">
+                    <label for="siteUrl">URL</label>
+                    <input type="url" id="siteUrl" required>
+                </div>
+                <div class="form-group">
+                    <label for="siteDescription">Description</label>
+                    <textarea id="siteDescription" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="siteCategory">Catégorie</label>
+                    <select id="siteCategory" required></select>
+                </div>
+                <div class="form-group">
+                    <label for="siteImage">Image URL</label>
+                    <input type="url" id="siteImage">
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="siteValid">
+                        Site validé
+                    </label>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Enregistrer</button>
+                    <button type="button" class="btn-secondary close-modal">Annuler</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="categoryModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Catégorie</h2>
+            <form id="categoryForm">
+                <input type="hidden" id="categoryId">
+                <div class="form-group">
+                    <label for="categoryName">Nom</label>
+                    <input type="text" id="categoryName" required>
+                </div>
+                <div class="form-group">
+                    <label for="categoryDescription">Description</label>
+                    <textarea id="categoryDescription" required></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Enregistrer</button>
+                    <button type="button" class="btn-secondary close-modal">Annuler</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <h2>Confirmation</h2>
+            <p id="confirmMessage"></p>
+            <div class="form-actions">
+                <button id="confirmYes" class="btn-danger">Oui, supprimer</button>
+                <button id="confirmNo" class="btn-secondary">Annuler</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <script type="module" src="js/admin.js"></script>
+</body>
+</html>

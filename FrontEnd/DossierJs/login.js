@@ -31,7 +31,14 @@ if (loginForm) {
       showNotification("Connexion réussie !", "success");
 
       setTimeout(() => {
-        window.location.href = "MonSiteAccueil.html";
+        // 🔥 Redirection selon le rôle
+        if (data.user.Id_Role === 1) {
+          window.location.href = "../admin/index.html"; // page admin
+        } else if (data.user.Id_Role === 3) {
+          window.location.href = "MonSiteAccueil.html"; // page utilisateur
+        } else {
+          window.location.href = "MonSiteAccueil.html"; // fallback
+        }
       }, 1000); // petit délai pour voir la notification
     } catch (err) {
       showNotification(err.message, "error");
