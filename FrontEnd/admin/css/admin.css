@@ -1,15 +1,20 @@
+/* ===== IMPORTATION POLICE ===== */
+@import url('https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&display=swap');
+
+
+
 /* admin.css */
 :root {
-    --primary-color: #2c3e50;
-    --secondary-color: #34495e;
-    --accent-color: #3498db;
-    --danger-color: #e74c3c;
-    --success-color: #2ecc71;
-    --warning-color: #f1c40f;
-    --text-color: #333;
-    --light-bg: #ecf0f1;
-    --white: #ffffff;
-    --shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --primary-color: #08403f;        /* header background */
+    --secondary-color: rgba(8, 64, 63, 0.8);  /* sidebar background */
+    --accent-color: #39ff14;         /* active / hover gradient green */
+    --danger-color: #e74c3c;         /* garde rouge pour danger */
+    --success-color: #2ecc71;        /* garde vert pour succès */
+    --warning-color: #f1c40f;        /* inchangé */
+    --text-color: #021f0f;           /* texte principal clair */
+    --light-bg: rgb(245, 237, 224);  /* fond général */
+    --white: #ffffff;                /* blanc inchangé */
+    --shadow: 0 2px 4px rgba(0, 255, 128, 0.2); /* ajusté selon ton second CSS */
 }
 
 * {
@@ -19,7 +24,7 @@
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: "Exo 2", sans-serif;
     line-height: 1.6;
     color: var(--text-color);
     background-color: var(--light-bg);
@@ -42,7 +47,46 @@ header {
     justify-content: space-between;
     max-width: 1400px;
     margin: 0 auto;
+
+    font-weight: 600;
+    font-size: 1.2rem;
+
+    /* Dégradé subtil initial */
+    background: linear-gradient(
+        90deg,
+        #a1f1c6 0%,
+        #b0f4c9 20%,
+        #9cf0b8 40%,
+        #a1f1c6 60%,
+        #b0f4c9 80%,
+        #9cf0b8 100%
+    );
+
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+
+    /* Animation du dégradé et de la luminosité */
+    animation: neonGradientHeader 6s linear infinite,
+               neonGlowHeader 2.5s ease-in-out infinite alternate;
 }
+
+/* Déplacement subtil du dégradé */
+@keyframes neonGradientHeader {
+    0% { background-position: 0% 0%; }
+    50% { background-position: 100% 0%; }
+    100% { background-position: 0% 0%; }
+}
+
+/* Légères variations de luminosité et text-shadow pour créer un scintillement subtil */
+@keyframes neonGlowHeader {
+    0% { filter: brightness(1); text-shadow: 0 0 4px rgba(161, 241, 198, 0.4); }
+    25% { filter: brightness(1.05); text-shadow: 0 0 6px rgba(161, 241, 198, 0.45); }
+    50% { filter: brightness(1); text-shadow: 0 0 5px rgba(161, 241, 198, 0.42); }
+    75% { filter: brightness(1.03); text-shadow: 0 0 7px rgba(161, 241, 198, 0.48); }
+    100% { filter: brightness(1); text-shadow: 0 0 4px rgba(161, 241, 198, 0.4); }
+}
+
 
 .logo {
     height: 40px;
@@ -66,7 +110,7 @@ header {
 .sidebar {
     width: 250px;
     background-color: var(--secondary-color);
-    padding: 1rem;
+    padding: 2.5rem;
     position: fixed;
     height: calc(100vh - 60px);
 }
@@ -100,7 +144,7 @@ header {
 .content {
     flex: 1;
     margin-left: 250px;
-    padding: 2rem;
+    padding: 4rem;
 }
 
 /* Sections */
@@ -189,6 +233,45 @@ tr:hover {
     border: none;
     border-radius: 4px;
     cursor: pointer;
+}
+
+#logoutBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2em;
+  padding: 0 20px;
+  background: linear-gradient(135deg, #0d0d0d, #1a1a1d);
+  color: var(--white);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 1em;
+  margin-left: 10px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0,255,128,0.2);
+  position: relative;
+
+  /* 🧩 Ajout essentiel pour restaurer le texte normal */
+  -webkit-background-clip: border-box;
+  -webkit-text-fill-color: var(--white);
+}
+
+
+#logoutBtn:hover {
+  /* change la propriété WebKit qui est réellement utilisée pour la couleur du texte */
+  -webkit-text-fill-color: var(--text-color);
+  color: var(--text-color); /* fallback */
+  background: linear-gradient(135deg, #39ff14, #00ffaa);
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(0,255,128,0.6), 0 0 40px rgba(0,255,128,0.3);
+  animation: pulse 1.5s infinite;
+}
+
+#logoutBtn:active {
+  transform: scale(0.95);
+  box-shadow: none;
 }
 
 /* Modals */

@@ -64,6 +64,16 @@ header {
   /* Animation du dégradé et de la luminosité */
   animation: neonGradient 6s linear infinite, neonGlow 2.5s ease-in-out infinite alternate;
 }
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+ 
 
 #userEmail {
   font-weight: 600;
