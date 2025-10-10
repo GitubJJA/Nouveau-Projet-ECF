@@ -1,7 +1,9 @@
 // admin.js
 const API_BASE_URL = 'http://localhost:3001/api';
 
-// Utility Functions
+// ========================
+// UTILITY FUNCTIONS
+// ========================
 function getAuthToken() {
     return localStorage.getItem('token');
 }
@@ -11,10 +13,7 @@ function showNotification(message, type = 'success') {
     notification.textContent = message;
     notification.className = `notification ${type}`;
     notification.style.display = 'block';
-
-    setTimeout(() => {
-        notification.style.display = 'none';
-    }, 3000);
+    setTimeout(() => notification.style.display = 'none', 3000);
 }
 
 async function fetchWithAuth(url, options = {}) {
@@ -45,41 +44,33 @@ async function fetchWithAuth(url, options = {}) {
     }
 }
 
-// Navigation
+// ========================
+// NAVIGATION
+// ========================
 function setupNavigation() {
     const navButtons = document.querySelectorAll('.nav-btn');
     const sections = document.querySelectorAll('.section');
 
     navButtons.forEach(btn => {
         btn.addEventListener('click', () => {
-            const targetSection = btn.dataset.section;
-            
+            const target = btn.dataset.section;
             navButtons.forEach(b => b.classList.remove('active'));
             sections.forEach(s => s.classList.remove('active'));
-            
             btn.classList.add('active');
-            document.getElementById(targetSection).classList.add('active');
-            
+            document.getElementById(target).classList.add('active');
+
             // Load section data
-            switch(targetSection) {
-                case 'dashboard':
-                    loadDashboardData();
-                    break;
-                case 'users':
-                    loadUsers();
-                    break;
-                case 'sites':
-                    loadSites();
-                    break;
-                case 'categories':
-                    loadCategories();
-                    break;
-            }
+            if (target === 'dashboard') loadDashboardData();
+            else if (target === 'users') loadUsers();
+            else if (target === 'sites') loadSites();
+            else if (target === 'categories') loadCategories();
         });
     });
 }
 
-// Dashboard
+// ========================
+// DASHBOARD
+// ========================
 async function loadDashboardData() {
     try {
         const [usersResponse, sitesResponse] = await Promise.all([
@@ -92,20 +83,24 @@ async function loadDashboardData() {
 
         document.getElementById('userCount').textContent = users.length;
         document.getElementById('siteCount').textContent = sites.length;
-        document.getElementById('pendingSiteCount').textContent = 
-            sites.filter(site => !site.valide).length;
+        document.getElementById('pendingSiteCount').textContent = sites.filter(s => !s.valide).length;
     } catch (error) {
-        console.error('Error loading dashboard:', error);
+        console.error(error);
         showNotification('Erreur lors du chargement du tableau de bord', 'error');
     }
 }
 
-// Users Management
+// ========================
+// USERS
+// ========================
+function getRoleName(roleId) {
+    return {1: 'Administrateur', 2: 'Modérateur', 3: 'Utilisateur'}[roleId] || 'Utilisateur';
+}
+
 async function loadUsers() {
     try {
         const response = await fetchWithAuth(`${API_BASE_URL}/users`);
         const users = await response.json();
-
         const tbody = document.querySelector('#usersTable tbody');
         tbody.innerHTML = '';
 
@@ -117,121 +112,106 @@ async function loadUsers() {
                 <td>${user.prénom}</td>
                 <td>${user.email}</td>
                 <td>${getRoleName(user.Id_Role)}</td>
-                <td>
-                    <button onclick="editUser(${user.id_utilisateur})" class="btn-secondary">Éditer</button>
-                    <button onclick="deleteUser(${user.id_utilisateur})" class="btn-danger">Supprimer</button>
-                </td>
+                <td></td>
             `;
+            // Buttons
+            const tdActions = tr.querySelector('td:last-child');
+            const btnEdit = document.createElement('button');
+            btnEdit.className = 'btn-secondary edit-user';
+            btnEdit.textContent = 'Éditer';
+            btnEdit.dataset.id = user.id_utilisateur;
+
+            const btnDelete = document.createElement('button');
+            btnDelete.className = 'btn-danger delete-user';
+            btnDelete.textContent = 'Supprimer';
+            btnDelete.dataset.id = user.id_utilisateur;
+
+            tdActions.appendChild(btnEdit);
+            tdActions.appendChild(btnDelete);
             tbody.appendChild(tr);
         });
     } catch (error) {
-        console.error('Error loading users:', error);
+        console.error(error);
         showNotification('Erreur lors du chargement des utilisateurs', 'error');
     }
 }
 
-function getRoleName(roleId) {
-    const roles = {
-        1: 'Administrateur',
-        2: 'Modérateur',
-        3: 'Utilisateur'
-    };
-    return roles[roleId] || 'Utilisateur';
-}
-
 async function editUser(userId = null) {
-    const userModal = document.getElementById('userModal');
-    const userForm = document.getElementById('userForm');
+    const modal = document.getElementById('userModal');
+    const form = document.getElementById('userForm');
     const userIdInput = document.getElementById('userId');
 
     if (userId) {
         try {
-            const response = await fetchWithAuth(`${API_BASE_URL}/users/${userId}`);
-            const user = await response.json();
-
+            const res = await fetchWithAuth(`${API_BASE_URL}/users/${userId}`);
+            const user = await res.json();
             userIdInput.value = user.id_utilisateur;
             document.getElementById('userNom').value = user.nom;
             document.getElementById('userPrenom').value = user.prénom;
             document.getElementById('userEmail').value = user.email;
             document.getElementById('userRole').value = user.Id_Role;
-        } catch (error) {
-            console.error('Error loading user:', error);
-            showNotification('Erreur lors du chargement de l\'utilisateur', 'error');
+        } catch (e) {
+            console.error(e);
+            showNotification('Erreur chargement utilisateur', 'error');
             return;
         }
-    } else {
-        userForm.reset();
-        userIdInput.value = '';
-    }
+    } else form.reset();
 
-    userModal.style.display = 'block';
+    modal.style.display = 'block';
 }
 
-async function saveUser(event) {
-    event.preventDefault();
+async function saveUser(e) {
+    e.preventDefault();
     const userId = document.getElementById('userId').value;
-    const userData = {
+    const data = {
         nom: document.getElementById('userNom').value,
         prénom: document.getElementById('userPrenom').value,
         email: document.getElementById('userEmail').value,
         Id_Role: document.getElementById('userRole').value
     };
-
     const password = document.getElementById('userPassword').value;
-    if (password) {
-        userData.mot_de_passe = password;
-    }
+    if (password) data.mot_de_passe = password;
 
     try {
         const method = userId ? 'PUT' : 'POST';
-        const url = userId 
-            ? `${API_BASE_URL}/users/${userId}`
-            : `${API_BASE_URL}/users`;
+        const url = userId ? `${API_BASE_URL}/users/${userId}` : `${API_BASE_URL}/users`;
 
-        const response = await fetchWithAuth(url, {
-            method,
-            body: JSON.stringify(userData)
-        });
-
-        if (!response.ok) throw new Error('Erreur lors de la sauvegarde');
+        const res = await fetchWithAuth(url, {method, body: JSON.stringify(data)});
+        if (!res.ok) throw new Error('Erreur sauvegarde');
 
         document.getElementById('userModal').style.display = 'none';
-        showNotification('Utilisateur sauvegardé avec succès');
+        showNotification('Utilisateur sauvegardé');
         loadUsers();
-    } catch (error) {
-        console.error('Error saving user:', error);
-        showNotification('Erreur lors de la sauvegarde de l\'utilisateur', 'error');
+    } catch (e) {
+        console.error(e);
+        showNotification('Erreur sauvegarde utilisateur', 'error');
     }
 }
 
 async function deleteUser(userId) {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')) return;
-
+    if (!confirm('Supprimer cet utilisateur ?')) return;
     try {
-        const response = await fetchWithAuth(`${API_BASE_URL}/users/${userId}`, {
-            method: 'DELETE'
-        });
-
-        if (!response.ok) throw new Error('Erreur lors de la suppression');
-
-        showNotification('Utilisateur supprimé avec succès');
+        const res = await fetchWithAuth(`${API_BASE_URL}/users/${userId}`, {method: 'DELETE'});
+        if (!res.ok) throw new Error('Erreur suppression');
+        showNotification('Utilisateur supprimé');
         loadUsers();
-    } catch (error) {
-        console.error('Error deleting user:', error);
-        showNotification('Erreur lors de la suppression de l\'utilisateur', 'error');
+    } catch (e) {
+        console.error(e);
+        showNotification('Erreur suppression utilisateur', 'error');
     }
 }
 
-// Sites Management
+// ========================
+// SITES
+// ========================
 async function loadSites() {
     try {
-        const [sitesResponse, categoriesResponse] = await Promise.all([
+        const [sitesRes, catRes] = await Promise.all([
             fetchWithAuth(`${API_BASE_URL}/sites`),
             fetchWithAuth(`${API_BASE_URL}/categories`)
         ]);
-
-        const sites = await sitesResponse.json();
-        const categories = await categoriesResponse.json();
+        const sites = await sitesRes.json();
+        const categories = await catRes.json();
 
         const tbody = document.querySelector('#sitesTable tbody');
         tbody.innerHTML = '';
@@ -244,63 +224,69 @@ async function loadSites() {
                 <td><a href="${site.url}" target="_blank">${site.url}</a></td>
                 <td>${site.categorie || 'Non catégorisé'}</td>
                 <td>${site.valide ? 'Validé' : 'En attente'}</td>
-                <td>
-                    <button onclick="editSite(${site.id})" class="btn-secondary">Éditer</button>
-                    <button onclick="deleteSite(${site.id})" class="btn-danger">Supprimer</button>
-                </td>
+                <td></td>
             `;
+            const tdActions = tr.querySelector('td:last-child');
+            const btnEdit = document.createElement('button');
+            btnEdit.className = 'btn-secondary edit-site';
+            btnEdit.textContent = 'Éditer';
+            btnEdit.dataset.id = site.id;
+
+            const btnDelete = document.createElement('button');
+            btnDelete.className = 'btn-danger delete-site';
+            btnDelete.textContent = 'Supprimer';
+            btnDelete.dataset.id = site.id;
+
+            tdActions.appendChild(btnEdit);
+            tdActions.appendChild(btnDelete);
             tbody.appendChild(tr);
         });
 
-        // Update categories in site form
-        const categorySelect = document.getElementById('siteCategory');
-        categorySelect.innerHTML = '<option value="">Sélectionnez une catégorie</option>';
-        categories.forEach(category => {
-            const option = document.createElement('option');
-            option.value = category.id_categorie;
-            option.textContent = category.nom;
-            categorySelect.appendChild(option);
+        // Update categories in form
+        const select = document.getElementById('siteCategory');
+        select.innerHTML = '<option value="">Sélectionnez une catégorie</option>';
+        categories.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.id_categorie;
+            opt.textContent = c.nom;
+            select.appendChild(opt);
         });
-    } catch (error) {
-        console.error('Error loading sites:', error);
-        showNotification('Erreur lors du chargement des sites', 'error');
+    } catch (e) {
+        console.error(e);
+        showNotification('Erreur chargement sites', 'error');
     }
 }
 
 async function editSite(siteId = null) {
-    const siteModal = document.getElementById('siteModal');
-    const siteForm = document.getElementById('siteForm');
-    const siteIdInput = document.getElementById('siteId');
+    const modal = document.getElementById('siteModal');
+    const form = document.getElementById('siteForm');
+    const idInput = document.getElementById('siteId');
 
     if (siteId) {
         try {
-            const response = await fetchWithAuth(`${API_BASE_URL}/sites/${siteId}`);
-            const site = await response.json();
-
-            siteIdInput.value = site.id;
+            const res = await fetchWithAuth(`${API_BASE_URL}/sites/${siteId}`);
+            const site = await res.json();
+            idInput.value = site.id;
             document.getElementById('siteName').value = site.nom;
             document.getElementById('siteUrl').value = site.url;
             document.getElementById('siteDescription').value = site.description;
             document.getElementById('siteCategory').value = site.id_categorie;
             document.getElementById('siteImage').value = site.image;
             document.getElementById('siteValid').checked = site.valide;
-        } catch (error) {
-            console.error('Error loading site:', error);
-            showNotification('Erreur lors du chargement du site', 'error');
+        } catch (e) {
+            console.error(e);
+            showNotification('Erreur chargement site', 'error');
             return;
         }
-    } else {
-        siteForm.reset();
-        siteIdInput.value = '';
-    }
+    } else form.reset();
 
-    siteModal.style.display = 'block';
+    modal.style.display = 'block';
 }
 
-async function saveSite(event) {
-    event.preventDefault();
+async function saveSite(e) {
+    e.preventDefault();
     const siteId = document.getElementById('siteId').value;
-    const siteData = {
+    const data = {
         nom: document.getElementById('siteName').value,
         url: document.getElementById('siteUrl').value,
         description: document.getElementById('siteDescription').value,
@@ -308,221 +294,209 @@ async function saveSite(event) {
         image: document.getElementById('siteImage').value,
         valide: document.getElementById('siteValid').checked
     };
-
     try {
         const method = siteId ? 'PUT' : 'POST';
-        const url = siteId 
-            ? `${API_BASE_URL}/sites/${siteId}`
-            : `${API_BASE_URL}/sites`;
-
-        const response = await fetchWithAuth(url, {
-            method,
-            body: JSON.stringify(siteData)
-        });
-
-        if (!response.ok) throw new Error('Erreur lors de la sauvegarde');
-
+        const url = siteId ? `${API_BASE_URL}/sites/${siteId}` : `${API_BASE_URL}/sites`;
+        const res = await fetchWithAuth(url, {method, body: JSON.stringify(data)});
+        if (!res.ok) throw new Error('Erreur sauvegarde site');
         document.getElementById('siteModal').style.display = 'none';
-        showNotification('Site sauvegardé avec succès');
+        showNotification('Site sauvegardé');
         loadSites();
-    } catch (error) {
-        console.error('Error saving site:', error);
-        showNotification('Erreur lors de la sauvegarde du site', 'error');
+    } catch (e) {
+        console.error(e);
+        showNotification('Erreur sauvegarde site', 'error');
     }
 }
 
 async function deleteSite(siteId) {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer ce site ?')) return;
-
+    if (!confirm('Supprimer ce site ?')) return;
     try {
-        const response = await fetchWithAuth(`${API_BASE_URL}/sites/${siteId}`, {
-            method: 'DELETE'
-        });
-
-        if (!response.ok) throw new Error('Erreur lors de la suppression');
-
-        showNotification('Site supprimé avec succès');
+        const res = await fetchWithAuth(`${API_BASE_URL}/sites/${siteId}`, {method: 'DELETE'});
+        if (!res.ok) throw new Error('Erreur suppression site');
+        showNotification('Site supprimé');
         loadSites();
-    } catch (error) {
-        console.error('Error deleting site:', error);
-        showNotification('Erreur lors de la suppression du site', 'error');
+    } catch (e) {
+        console.error(e);
+        showNotification('Erreur suppression site', 'error');
     }
 }
 
-// Categories Management
+// ========================
+// CATEGORIES
+// ========================
 async function loadCategories() {
     try {
-        const response = await fetchWithAuth(`${API_BASE_URL}/categories`);
-        const categories = await response.json();
-
+        const res = await fetchWithAuth(`${API_BASE_URL}/categories`);
+        const categories = await res.json();
         const tbody = document.querySelector('#categoriesTable tbody');
         tbody.innerHTML = '';
 
-        categories.forEach(category => {
+        categories.forEach(cat => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td>${category.id_categorie}</td>
-                <td>${category.nom}</td>
-                <td>${category.description}</td>
-                <td>
-                    <button onclick="editCategory(${category.id_categorie})" class="btn-secondary">Éditer</button>
-                    <button onclick="deleteCategory(${category.id_categorie})" class="btn-danger">Supprimer</button>
-                </td>
+                <td>${cat.id_categorie}</td>
+                <td>${cat.nom}</td>
+                <td>${cat.description}</td>
+                <td></td>
             `;
+            const tdActions = tr.querySelector('td:last-child');
+            const btnEdit = document.createElement('button');
+            btnEdit.className = 'btn-secondary edit-category';
+            btnEdit.textContent = 'Éditer';
+            btnEdit.dataset.id = cat.id_categorie;
+
+            const btnDelete = document.createElement('button');
+            btnDelete.className = 'btn-danger delete-category';
+            btnDelete.textContent = 'Supprimer';
+            btnDelete.dataset.id = cat.id_categorie;
+
+            tdActions.appendChild(btnEdit);
+            tdActions.appendChild(btnDelete);
             tbody.appendChild(tr);
         });
-    } catch (error) {
-        console.error('Error loading categories:', error);
-        showNotification('Erreur lors du chargement des catégories', 'error');
+    } catch (e) {
+        console.error(e);
+        showNotification('Erreur chargement catégories', 'error');
     }
 }
 
-async function editCategory(categoryId = null) {
-    const categoryModal = document.getElementById('categoryModal');
-    const categoryForm = document.getElementById('categoryForm');
-    const categoryIdInput = document.getElementById('categoryId');
+async function editCategory(catId = null) {
+    const modal = document.getElementById('categoryModal');
+    const form = document.getElementById('categoryForm');
+    const idInput = document.getElementById('categoryId');
 
-    if (categoryId) {
+    if (catId) {
         try {
-            const response = await fetchWithAuth(`${API_BASE_URL}/categories/${categoryId}`);
-            const category = await response.json();
-
-            categoryIdInput.value = category.id_categorie;
-            document.getElementById('categoryName').value = category.nom;
-            document.getElementById('categoryDescription').value = category.description;
-        } catch (error) {
-            console.error('Error loading category:', error);
-            showNotification('Erreur lors du chargement de la catégorie', 'error');
+            const res = await fetchWithAuth(`${API_BASE_URL}/categories/${catId}`);
+            const cat = await res.json();
+            idInput.value = cat.id_categorie;
+            document.getElementById('categoryName').value = cat.nom;
+            document.getElementById('categoryDescription').value = cat.description;
+        } catch (e) {
+            console.error(e);
+            showNotification('Erreur chargement catégorie', 'error');
             return;
         }
-    } else {
-        categoryForm.reset();
-        categoryIdInput.value = '';
-    }
+    } else form.reset();
 
-    categoryModal.style.display = 'block';
+    modal.style.display = 'block';
 }
 
-async function saveCategory(event) {
-    event.preventDefault();
-    const categoryId = document.getElementById('categoryId').value;
-    const categoryData = {
+async function saveCategory(e) {
+    e.preventDefault();
+    const catId = document.getElementById('categoryId').value;
+    const data = {
         nom: document.getElementById('categoryName').value,
         description: document.getElementById('categoryDescription').value
     };
-
     try {
-        const method = categoryId ? 'PUT' : 'POST';
-        const url = categoryId 
-            ? `${API_BASE_URL}/categories/${categoryId}`
-            : `${API_BASE_URL}/categories`;
-
-        const response = await fetchWithAuth(url, {
-            method,
-            body: JSON.stringify(categoryData)
-        });
-
-        if (!response.ok) throw new Error('Erreur lors de la sauvegarde');
-
+        const method = catId ? 'PUT' : 'POST';
+        const url = catId ? `${API_BASE_URL}/categories/${catId}` : `${API_BASE_URL}/categories`;
+        const res = await fetchWithAuth(url, {method, body: JSON.stringify(data)});
+        if (!res.ok) throw new Error('Erreur sauvegarde catégorie');
         document.getElementById('categoryModal').style.display = 'none';
-        showNotification('Catégorie sauvegardée avec succès');
+        showNotification('Catégorie sauvegardée');
         loadCategories();
-    } catch (error) {
-        console.error('Error saving category:', error);
-        showNotification('Erreur lors de la sauvegarde de la catégorie', 'error');
+    } catch (e) {
+        console.error(e);
+        showNotification('Erreur sauvegarde catégorie', 'error');
     }
 }
 
-async function deleteCategory(categoryId) {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer cette catégorie ?')) return;
-
+async function deleteCategory(catId) {
+    if (!confirm('Supprimer cette catégorie ?')) return;
     try {
-        const response = await fetchWithAuth(`${API_BASE_URL}/categories/${categoryId}`, {
-            method: 'DELETE'
-        });
-
-        if (!response.ok) throw new Error('Erreur lors de la suppression');
-
-        showNotification('Catégorie supprimée avec succès');
+        const res = await fetchWithAuth(`${API_BASE_URL}/categories/${catId}`, {method: 'DELETE'});
+        if (!res.ok) throw new Error('Erreur suppression catégorie');
+        showNotification('Catégorie supprimée');
         loadCategories();
-    } catch (error) {
-        console.error('Error deleting category:', error);
-        showNotification('Erreur lors de la suppression de la catégorie', 'error');
+    } catch (e) {
+        console.error(e);
+        showNotification('Erreur suppression catégorie', 'error');
     }
 }
 
-// Modal Management
+// ========================
+// MODALS
+// ========================
 function setupModals() {
     const modals = document.querySelectorAll('.modal');
-    const closeButtons = document.querySelectorAll('.close, .close-modal');
+    const closeBtns = document.querySelectorAll('.close, .close-modal');
+    closeBtns.forEach(btn => btn.addEventListener('click', () => modals.forEach(m => m.style.display = 'none')));
+    window.addEventListener('click', e => modals.forEach(m => { if(e.target===m) m.style.display='none'; }));
 
-    closeButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            modals.forEach(modal => {
-                modal.style.display = 'none';
-            });
-        });
-    });
-
-    window.addEventListener('click', (event) => {
-        modals.forEach(modal => {
-            if (event.target === modal) {
-                modal.style.display = 'none';
-            }
-        });
-    });
-
-    // Setup form submissions
     document.getElementById('userForm').addEventListener('submit', saveUser);
     document.getElementById('siteForm').addEventListener('submit', saveSite);
     document.getElementById('categoryForm').addEventListener('submit', saveCategory);
 
-    // Setup add buttons
     document.getElementById('addUserBtn').addEventListener('click', () => editUser());
     document.getElementById('addSiteBtn').addEventListener('click', () => editSite());
     document.getElementById('addCategoryBtn').addEventListener('click', () => editCategory());
 }
 
-// Setup search functionality
+// ========================
+// SEARCH
+// ========================
 function setupSearch() {
-    const searchInputs = {
-        userSearch: '#usersTable tbody tr',
-        siteSearch: '#sitesTable tbody tr',
-        categorySearch: '#categoriesTable tbody tr'
-    };
-
-    Object.entries(searchInputs).forEach(([inputId, tableSelector]) => {
-        const input = document.getElementById(inputId);
-        if (!input) return;
-
-        input.addEventListener('input', () => {
-            const searchTerm = input.value.toLowerCase();
-            const rows = document.querySelectorAll(tableSelector);
-
-            rows.forEach(row => {
-                const text = row.textContent.toLowerCase();
-                row.style.display = text.includes(searchTerm) ? '' : 'none';
+    const searches = [
+        {input: 'userSearch', selector: '#usersTable tbody tr'},
+        {input: 'siteSearch', selector: '#sitesTable tbody tr'},
+        {input: 'categorySearch', selector: '#categoriesTable tbody tr'}
+    ];
+    searches.forEach(({input, selector}) => {
+        const inp = document.getElementById(input);
+        if (!inp) return;
+        inp.addEventListener('input', () => {
+            const term = inp.value.toLowerCase();
+            document.querySelectorAll(selector).forEach(row => {
+                row.style.display = row.textContent.toLowerCase().includes(term) ? '' : 'none';
             });
         });
     });
 }
 
-// Logout
+// ========================
+// LOGOUT
+// ========================
 function setupLogout() {
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', () => {
-            localStorage.removeItem('token');
-            window.location.href = '../DossierHtml/login.html';
-        });
-    }
+    const btn = document.getElementById('logoutBtn');
+    btn?.addEventListener('click', () => {
+        localStorage.removeItem('token');
+        window.location.href = '../DossierHtml/login.html';
+    });
 }
 
-// Initialize everything
+// ========================
+// EVENT DELEGATION (EDIT / DELETE)
+// ========================
+function setupTableButtons() {
+    // Users
+    document.querySelector('#usersTable tbody').addEventListener('click', e => {
+        if(e.target.classList.contains('edit-user')) editUser(e.target.dataset.id);
+        if(e.target.classList.contains('delete-user')) deleteUser(e.target.dataset.id);
+    });
+
+    // Sites
+    document.querySelector('#sitesTable tbody').addEventListener('click', e => {
+        if(e.target.classList.contains('edit-site')) editSite(e.target.dataset.id);
+        if(e.target.classList.contains('delete-site')) deleteSite(e.target.dataset.id);
+    });
+
+    // Categories
+    document.querySelector('#categoriesTable tbody').addEventListener('click', e => {
+        if(e.target.classList.contains('edit-category')) editCategory(e.target.dataset.id);
+        if(e.target.classList.contains('delete-category')) deleteCategory(e.target.dataset.id);
+    });
+}
+
+// ========================
+// INIT
+// ========================
 document.addEventListener('DOMContentLoaded', () => {
     setupNavigation();
     setupModals();
     setupSearch();
     setupLogout();
-    loadDashboardData(); // Load initial dashboard data
+    setupTableButtons();
+    loadDashboardData();
 });
