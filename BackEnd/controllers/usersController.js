@@ -64,6 +64,10 @@ export async function updateUser(req, res, next) {
   if (!Number.isFinite(id)) return res.status(400).json({ error: 'invalid_id' });
 
   try {
+    // Authorization: allow if admin or the user themselves
+    if (!req.user) return res.status(401).json({ error: 'user_not_authenticated' });
+    const isAdmin = req.user.Id_Role === 1;
+    if (!isAdmin && req.user.id_utilisateur !== id) return res.status(403).json({ error: 'forbidden' });
     const { nom, prénom, email, mot_de_passe, Id_Role } = req.body || {};
     const sets = [];
     const values = [];
@@ -103,6 +107,10 @@ export async function deleteUser(req, res, next) {
   if (!Number.isFinite(id)) return res.status(400).json({ error: 'invalid_id' });
 
   try {
+    // Authorization: allow if admin or the user themselves
+    if (!req.user) return res.status(401).json({ error: 'user_not_authenticated' });
+    const isAdmin = req.user.Id_Role === 1;
+    if (!isAdmin && req.user.id_utilisateur !== id) return res.status(403).json({ error: 'forbidden' });
     const [result] = await pool.query('DELETE FROM utilisateurs WHERE id_utilisateur = ?', [id]);
     if (result.affectedRows === 0) return res.status(404).json({ error: 'not_found' });
     res.status(204).send();

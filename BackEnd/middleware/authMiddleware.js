@@ -11,9 +11,17 @@ export function authenticate(req, res, next) {
 
   try {
     const payload = jwt.verify(token, SECRET_KEY);
-    req.user = { id_utilisateur: payload.id_utilisateur, email: payload.email };
+    // include role if present in token
+    req.user = { id_utilisateur: payload.id_utilisateur, email: payload.email, Id_Role: payload.Id_Role };
     next();
   } catch (err) {
     return res.status(401).json({ error: "user_not_authenticated" });
   }
+}
+
+export function ensureAdmin(req, res, next) {
+  // authenticate must have run before and set req.user
+  if (!req.user) return res.status(401).json({ error: 'user_not_authenticated' });
+  if (req.user.Id_Role !== 1) return res.status(403).json({ error: 'forbidden' });
+  next();
 }

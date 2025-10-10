@@ -15,7 +15,8 @@ const inputNewPassword = document.getElementById("newPassword");
 
 // Fonction pour récupérer le token JWT
 function getAuthToken() {
-    return localStorage.getItem("token");
+    const cookie = document.cookie.split('; ').find(c => c.startsWith('jwt='));
+    return cookie ? cookie.split('=')[1] : null;
 }
 
 // Fonction pour décoder les informations du token
@@ -233,8 +234,9 @@ function attachDeleteHandler() {
                     throw new Error(result.error || "Erreur lors de la suppression");
                 }
 
-                // Suppression du token
-                localStorage.removeItem("token");
+                // Suppression du token (cookie) et session
+                sessionStorage.removeItem('user');
+                document.cookie = 'jwt=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT;';
                 showNotification("Compte supprimé 🚨", "success");
 
                 setTimeout(() => {

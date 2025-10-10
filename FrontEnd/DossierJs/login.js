@@ -25,8 +25,18 @@ if (loginForm) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Erreur de connexion");
 
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
+  // Stocker le token dans un cookie et l'utilisateur en session
+  // En développement (http://localhost), les cookies Secure ne sont pas autorisés,
+  // donc on n'ajoute le flag Secure que si on est en https.
+  try {
+    const isSecure = window.location.protocol === 'https:';
+    let cookieStr = `jwt=${data.token}; path=/; samesite=Strict`;
+    if (isSecure) cookieStr += '; Secure';
+    document.cookie = cookieStr;
+  } catch (e) {
+    console.warn('Impossible de définir le cookie JWT:', e);
+  }
+  sessionStorage.setItem('user', JSON.stringify(data.user));
 
       showNotification("Connexion réussie !", "success");
 

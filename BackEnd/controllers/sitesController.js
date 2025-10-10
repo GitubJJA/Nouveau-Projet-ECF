@@ -152,6 +152,14 @@ export async function updateSite(req, res) {
   values.push(siteId); // pour WHERE
 
   try {
+    // Authorization: only admin or owner can update
+    if (!req.user) return res.status(401).json({ error: 'user_not_authenticated' });
+    // get existing site to check owner
+    const [existing] = await pool.query('SELECT id_utilisateur_1 FROM sites WHERE id = ?', [siteId]);
+    if (!existing || existing.length === 0) return res.status(404).json({ message: 'Site non trouvé' });
+    const ownerId = existing[0].id_utilisateur_1;
+    const isAdmin = req.user.Id_Role === 1;
+    if (!isAdmin && req.user.id_utilisateur !== ownerId) return res.status(403).json({ error: 'forbidden' });
     const [result] = await pool.query(
       `UPDATE sites SET ${fields.join(', ')} WHERE id = ?`,
       values
@@ -181,6 +189,13 @@ export async function deleteSite(req, res, next) {
   if (!Number.isFinite(id)) return res.status(400).json({ error: 'invalid_id' });
 
   try {
+    // Authorization: only admin or owner can delete
+    if (!req.user) return res.status(401).json({ error: 'user_not_authenticated' });
+    const [existing] = await pool.query('SELECT id_utilisateur_1 FROM sites WHERE id = ?', [id]);
+    if (!existing || existing.length === 0) return res.status(404).json({ error: 'not_found' });
+    const ownerId = existing[0].id_utilisateur_1;
+    const isAdmin = req.user.Id_Role === 1;
+    if (!isAdmin && req.user.id_utilisateur !== ownerId) return res.status(403).json({ error: 'forbidden' });
     const [result] = await pool.query('DELETE FROM sites WHERE id = ?', [id]);
     if (result.affectedRows === 0) return res.status(404).json({ error: 'not_found' });
     res.status(204).send();

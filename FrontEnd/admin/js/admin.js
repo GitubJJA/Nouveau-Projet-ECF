@@ -5,7 +5,10 @@ const API_BASE_URL = 'http://localhost:3001/api';
 // UTILITY FUNCTIONS
 // ========================
 function getAuthToken() {
-    return localStorage.getItem('token');
+    // read JWT from cookie named 'jwt'
+    const cookie = document.cookie.split('; ').find(c => c.startsWith('jwt='));
+    if (!cookie) return null;
+    return cookie.split('=')[1];
 }
 
 function showNotification(message, type = 'success') {
@@ -23,19 +26,29 @@ async function fetchWithAuth(url, options = {}) {
         return;
     }
 
-    const defaultOptions = {
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-        }
+    // Merge headers so callers can provide Content-Type or others without
+    // overwriting the Authorization header
+    const defaultHeaders = {
+        'Authorization': `Bearer ${token}`
     };
+    const mergedHeaders = { ...defaultHeaders, ...(options.headers || {}) };
 
     try {
-        const response = await fetch(url, { ...defaultOptions, ...options });
+        const finalOptions = { ...options, headers: mergedHeaders };
+        console.debug('fetchWithAuth', { url, method: finalOptions.method || 'GET', tokenPresent: !!token });
+        const response = await fetch(url, finalOptions);
+
         if (response.status === 401) {
-            window.location.href = '../DossierHtml/login.html';
-            return;
+            // Not authenticated
+            const errBody = await response.json().catch(() => ({}));
+            throw new Error(errBody.error || 'user_not_authenticated');
         }
+
+        if (response.status === 403) {
+            const errBody = await response.json().catch(() => ({}));
+            throw new Error(errBody.error || 'forbidden');
+        }
+
         return response;
     } catch (error) {
         console.error('Fetch error:', error);
@@ -104,6 +117,22 @@ async function loadUsers() {
         const tbody = document.querySelector('#usersTable tbody');
         tbody.innerHTML = '';
 
+        // determine admin
+        let isAdmin = false;
+        try {
+            const storedUser = sessionStorage.getItem('user');
+            if (storedUser) {
+                const parsed = JSON.parse(storedUser);
+                if (parsed && parsed.Id_Role === 1) isAdmin = true;
+            } else {
+                const token = getAuthToken();
+                if (token) {
+                    const payload = JSON.parse(atob(token.split('.')[1] || ''));
+                    if (payload && payload.Id_Role === 1) isAdmin = true;
+                }
+            }
+        } catch (err) { console.warn('role parse err', err); }
+
         users.forEach(user => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
@@ -112,22 +141,24 @@ async function loadUsers() {
                 <td>${user.prénom}</td>
                 <td>${user.email}</td>
                 <td>${getRoleName(user.Id_Role)}</td>
-                <td></td>
+                <td>${isAdmin ? '' : ''}</td>
             `;
             // Buttons
             const tdActions = tr.querySelector('td:last-child');
-            const btnEdit = document.createElement('button');
-            btnEdit.className = 'btn-secondary edit-user';
-            btnEdit.textContent = 'Éditer';
-            btnEdit.dataset.id = user.id_utilisateur;
+            if (isAdmin) {
+                const btnEdit = document.createElement('button');
+                btnEdit.className = 'btn-secondary edit-user';
+                btnEdit.textContent = 'Éditer';
+                btnEdit.dataset.id = user.id_utilisateur;
 
-            const btnDelete = document.createElement('button');
-            btnDelete.className = 'btn-danger delete-user';
-            btnDelete.textContent = 'Supprimer';
-            btnDelete.dataset.id = user.id_utilisateur;
+                const btnDelete = document.createElement('button');
+                btnDelete.className = 'btn-danger delete-user';
+                btnDelete.textContent = 'Supprimer';
+                btnDelete.dataset.id = user.id_utilisateur;
 
-            tdActions.appendChild(btnEdit);
-            tdActions.appendChild(btnDelete);
+                tdActions.appendChild(btnEdit);
+                tdActions.appendChild(btnDelete);
+            }
             tbody.appendChild(tr);
         });
     } catch (error) {
@@ -167,7 +198,7 @@ async function saveUser(e) {
         nom: document.getElementById('userNom').value,
         prénom: document.getElementById('userPrenom').value,
         email: document.getElementById('userEmail').value,
-        Id_Role: document.getElementById('userRole').value
+        Id_Role: Number(document.getElementById('userRole').value)
     };
     const password = document.getElementById('userPassword').value;
     if (password) data.mot_de_passe = password;
@@ -176,7 +207,7 @@ async function saveUser(e) {
         const method = userId ? 'PUT' : 'POST';
         const url = userId ? `${API_BASE_URL}/users/${userId}` : `${API_BASE_URL}/users`;
 
-        const res = await fetchWithAuth(url, {method, body: JSON.stringify(data)});
+    const res = await fetchWithAuth(url, {method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)});
         if (!res.ok) throw new Error('Erreur sauvegarde');
 
         document.getElementById('userModal').style.display = 'none';
@@ -206,39 +237,62 @@ async function deleteUser(userId) {
 // ========================
 async function loadSites() {
     try {
+        // Récupérer les réponses
         const [sitesRes, catRes] = await Promise.all([
             fetchWithAuth(`${API_BASE_URL}/sites`),
             fetchWithAuth(`${API_BASE_URL}/categories`)
         ]);
+
         const sites = await sitesRes.json();
         const categories = await catRes.json();
 
         const tbody = document.querySelector('#sitesTable tbody');
         tbody.innerHTML = '';
 
+        // Déterminer si l'utilisateur courant est un admin
+        let isAdmin = false;
+        try {
+            const storedUser = sessionStorage.getItem('user');
+            if (storedUser) {
+                const parsed = JSON.parse(storedUser);
+                if (parsed && parsed.Id_Role === 1) isAdmin = true;
+            } else {
+                // fallback: try to read role from token payload
+                const token = getAuthToken();
+                if (token) {
+                    const payload = JSON.parse(atob(token.split('.')[1] || ''));
+                    if (payload && payload.Id_Role === 1) isAdmin = true;
+                }
+            }
+        } catch (err) {
+            console.warn('Impossible de déterminer le rôle de l\'utilisateur:', err);
+        }
+
+        // fonction d'échappement XSS
+        const escapeHtml = (str) => str ? str.toString()
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/\"/g, "&quot;")
+            .replace(/'/g, "&#039;") : '';
+
         sites.forEach(site => {
             const tr = document.createElement('tr');
+            // Si l'utilisateur est admin, on affiche les boutons, sinon on laisse vide
+            const actionsHtml = isAdmin ? `
+                <button class="btn-secondary edit-site" data-id="${site.id}">Éditer</button>
+                <button class="btn-danger delete-site" data-id="${site.id}">Supprimer</button>
+            ` : '';
+
             tr.innerHTML = `
-                <td>${site.id}</td>
-                <td>${site.nom}</td>
-                <td><a href="${site.url}" target="_blank">${site.url}</a></td>
-                <td>${site.categorie || 'Non catégorisé'}</td>
+                <td>${escapeHtml(site.id)}</td>
+                <td>${escapeHtml(site.nom)}</td>
+                <td><a href="${escapeHtml(site.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(site.url)}</a></td>
+                <td>${escapeHtml(site.categorie || 'Non catégorisé')}</td>
                 <td>${site.valide ? 'Validé' : 'En attente'}</td>
-                <td></td>
+                <td>${actionsHtml}</td>
             `;
-            const tdActions = tr.querySelector('td:last-child');
-            const btnEdit = document.createElement('button');
-            btnEdit.className = 'btn-secondary edit-site';
-            btnEdit.textContent = 'Éditer';
-            btnEdit.dataset.id = site.id;
 
-            const btnDelete = document.createElement('button');
-            btnDelete.className = 'btn-danger delete-site';
-            btnDelete.textContent = 'Supprimer';
-            btnDelete.dataset.id = site.id;
-
-            tdActions.appendChild(btnEdit);
-            tdActions.appendChild(btnDelete);
             tbody.appendChild(tr);
         });
 
@@ -297,11 +351,14 @@ async function saveSite(e) {
     try {
         const method = siteId ? 'PUT' : 'POST';
         const url = siteId ? `${API_BASE_URL}/sites/${siteId}` : `${API_BASE_URL}/sites`;
-        const res = await fetchWithAuth(url, {method, body: JSON.stringify(data)});
-        if (!res.ok) throw new Error('Erreur sauvegarde site');
+        const res = await fetchWithAuth(url, {method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)});
+        if (!res.ok) {
+            const errBody = await res.json().catch(() => ({}));
+            throw new Error(errBody.error || errBody.message || 'Erreur sauvegarde site');
+        }
         document.getElementById('siteModal').style.display = 'none';
         showNotification('Site sauvegardé');
-        loadSites();
+        await loadSites();
     } catch (e) {
         console.error(e);
         showNotification('Erreur sauvegarde site', 'error');
@@ -331,6 +388,22 @@ async function loadCategories() {
         const tbody = document.querySelector('#categoriesTable tbody');
         tbody.innerHTML = '';
 
+        // determine if current user is admin
+        let isAdmin = false;
+        try {
+            const storedUser = sessionStorage.getItem('user');
+            if (storedUser) {
+                const parsed = JSON.parse(storedUser);
+                if (parsed && parsed.Id_Role === 1) isAdmin = true;
+            } else {
+                const token = getAuthToken();
+                if (token) {
+                    const payload = JSON.parse(atob(token.split('.')[1] || ''));
+                    if (payload && payload.Id_Role === 1) isAdmin = true;
+                }
+            }
+        } catch (err) { console.warn('role parse err', err); }
+
         categories.forEach(cat => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
@@ -340,18 +413,20 @@ async function loadCategories() {
                 <td></td>
             `;
             const tdActions = tr.querySelector('td:last-child');
-            const btnEdit = document.createElement('button');
-            btnEdit.className = 'btn-secondary edit-category';
-            btnEdit.textContent = 'Éditer';
-            btnEdit.dataset.id = cat.id_categorie;
+            if (isAdmin) {
+                const btnEdit = document.createElement('button');
+                btnEdit.className = 'btn-secondary edit-category';
+                btnEdit.textContent = 'Éditer';
+                btnEdit.dataset.id = cat.id_categorie;
 
-            const btnDelete = document.createElement('button');
-            btnDelete.className = 'btn-danger delete-category';
-            btnDelete.textContent = 'Supprimer';
-            btnDelete.dataset.id = cat.id_categorie;
+                const btnDelete = document.createElement('button');
+                btnDelete.className = 'btn-danger delete-category';
+                btnDelete.textContent = 'Supprimer';
+                btnDelete.dataset.id = cat.id_categorie;
 
-            tdActions.appendChild(btnEdit);
-            tdActions.appendChild(btnDelete);
+                tdActions.appendChild(btnEdit);
+                tdActions.appendChild(btnDelete);
+            }
             tbody.appendChild(tr);
         });
     } catch (e) {
@@ -392,14 +467,75 @@ async function saveCategory(e) {
     try {
         const method = catId ? 'PUT' : 'POST';
         const url = catId ? `${API_BASE_URL}/categories/${catId}` : `${API_BASE_URL}/categories`;
-        const res = await fetchWithAuth(url, {method, body: JSON.stringify(data)});
-        if (!res.ok) throw new Error('Erreur sauvegarde catégorie');
+        // Debug: check token presence
+        const token = getAuthToken();
+        console.debug('saveCategory: token present?', !!token);
+
+        const res = await fetchWithAuth(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        // If fetchWithAuth returned null (auth issue) or response is not ok, handle gracefully
+        if (!res) throw new Error('Erreur de connexion ou non autorisé');
+        if (!res.ok) {
+            // Backend may not implement POST/PUT for categories (404) or return an error
+            if (res.status === 404) {
+                // Fallback: add category client-side so admin sees it in the UI (not persisted)
+                addCategoryToTableClientSide(data.nom, data.description);
+                document.getElementById('categoryModal').style.display = 'none';
+                showNotification('Catégorie ajoutée localement (endpoint backend manquant). Elle ne sera pas persistée.', 'error');
+                return;
+            }
+            const errBody = await res.json().catch(() => ({}));
+            throw new Error(errBody.error || errBody.message || 'Erreur sauvegarde catégorie');
+        }
+
+        // Success path
         document.getElementById('categoryModal').style.display = 'none';
         showNotification('Catégorie sauvegardée');
-        loadCategories();
+        await loadCategories();
     } catch (e) {
         console.error(e);
-        showNotification('Erreur sauvegarde catégorie', 'error');
+        if (e.message === 'user_not_authenticated') {
+            showNotification('Vous devez être connecté pour effectuer cette action. Veuillez vous reconnecter.', 'error');
+            return;
+        }
+        // If the error is network or 404 and we already tried fallback above, provide clear message
+        if (e.message && e.message.includes('404')) {
+            addCategoryToTableClientSide(data.nom, data.description);
+            document.getElementById('categoryModal').style.display = 'none';
+            showNotification('Catégorie ajoutée localement (backend non implémenté).', 'error');
+            return;
+        }
+        showNotification(e.message || 'Erreur sauvegarde catégorie', 'error');
+    }
+}
+
+// Client-side fallback: insert a row in the categories table (temporary, not persisted)
+function addCategoryToTableClientSide(nom, description) {
+    const tbody = document.querySelector('#categoriesTable tbody');
+    if (!tbody) return;
+    const tempId = `tmp-${Date.now()}`;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+        <td>${tempId}</td>
+        <td>${nom}</td>
+        <td>${description}</td>
+        <td>
+            <button class="btn-secondary" disabled>Éditer</button>
+            <button class="btn-danger" disabled>Supprimer</button>
+        </td>
+    `;
+    tbody.appendChild(tr);
+    // Also add to category select in site form if exists
+    const select = document.getElementById('siteCategory');
+    if (select) {
+        const opt = document.createElement('option');
+        opt.value = tempId;
+        opt.textContent = nom;
+        select.appendChild(opt);
     }
 }
 
@@ -461,7 +597,17 @@ function setupSearch() {
 function setupLogout() {
     const btn = document.getElementById('logoutBtn');
     btn?.addEventListener('click', () => {
-        localStorage.removeItem('token');
+        // Supprimer token et infos utilisateur stockés
+        try {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            sessionStorage.clear();
+            // Supprimer cookie jwt si présent
+            document.cookie = 'jwt=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT;';
+        } catch (e) {
+            console.warn('Erreur lors du nettoyage de la session:', e);
+        }
+        // Redirection vers la page de connexion
         window.location.href = '../DossierHtml/login.html';
     });
 }

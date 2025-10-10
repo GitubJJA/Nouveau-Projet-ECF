@@ -50,8 +50,10 @@ function afficherAccueil() {
 // ----------------------------
 function afficherBoutonsHeader() {
     const buttonsContainer = document.querySelector(".buttons");
-    const user = JSON.parse(localStorage.getItem("user"));
-    const token = localStorage.getItem("token");
+    const user = JSON.parse(sessionStorage.getItem("user"));
+    // read token from cookie
+    const cookie = document.cookie.split('; ').find(c => c.startsWith('jwt='));
+    const token = cookie ? cookie.split('=')[1] : null;
 
     if (token && user) {
         buttonsContainer.innerHTML = `
@@ -64,8 +66,9 @@ function afficherBoutonsHeader() {
             </div>   
         `;
         document.getElementById("logoutBtn").addEventListener("click", () => {
-            localStorage.removeItem("token");
-            localStorage.removeItem("user");
+            // clear session storage and cookie
+            sessionStorage.removeItem('user');
+            document.cookie = 'jwt=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT;';
             showNotification("Vous êtes déconnecté !", "success");
             location.reload();
         });
@@ -87,7 +90,7 @@ let editingSiteId = null;
 // Affichage des sites
 // ----------------------------
 function afficherSites(sitesToShow = sites) {
-    const user = JSON.parse(localStorage.getItem("user"));
+    const user = JSON.parse(sessionStorage.getItem("user"));
     let mainPage = "";
 
     sitesToShow.forEach((site) => {
@@ -123,7 +126,9 @@ function afficherSites(sitesToShow = sites) {
     document.querySelectorAll('.delete-btn').forEach(btn => {
         btn.addEventListener('click', async (e) => {
             const siteId = Number(e.target.dataset.id);
-            const token = localStorage.getItem("token");
+            // read token from cookie
+            const cookie = document.cookie.split('; ').find(c => c.startsWith('jwt='));
+            const token = cookie ? cookie.split('=')[1] : null;
             if (!token) return showNotification("Non autorisé", "error");
 
             showConfirm(async () => {
@@ -172,7 +177,7 @@ function activerFormulaireAjout() {
     if (!consent.checked) {
         return showNotification("Vous devez accepter la collecte des données pour continuer.", "error");
     }
-        const user = JSON.parse(localStorage.getItem("user"));
+    const user = JSON.parse(sessionStorage.getItem("user"));
         if (!user) return showNotification("Vous devez être connecté !", "error");
 
         const siteData = {
@@ -183,7 +188,8 @@ function activerFormulaireAjout() {
             id_utilisateur: user.id_utilisateur
         };
 
-        const token = localStorage.getItem("token");
+    const cookie = document.cookie.split('; ').find(c => c.startsWith('jwt='));
+    const token = cookie ? cookie.split('=')[1] : null;
 
         try {
             let res;
