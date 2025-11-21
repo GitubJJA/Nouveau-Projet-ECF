@@ -11,6 +11,41 @@ function getAuthToken() {
     return cookie.split('=')[1];
 }
 
+// === MODALE DE CONFIRMATION PERSONNALISÉE ===
+const confirmModal = document.getElementById("confirmModal");
+const confirmMessage = document.getElementById("confirmMessage");
+const confirmYes = document.getElementById("confirmYes");
+const confirmNo = document.getElementById("confirmNo");
+
+let confirmCallback = null;
+
+// Fonction d’ouverture de la modale
+function showConfirm(message, onConfirm) {
+    confirmMessage.textContent = message;
+    confirmCallback = onConfirm;
+    confirmModal.style.display = "block";
+}
+
+// Fermeture de la modale
+function closeConfirm() {
+    confirmModal.style.display = "none";
+    confirmCallback = null;
+}
+
+// Actions sur les boutons
+confirmYes.addEventListener("click", () => {
+    if (confirmCallback) confirmCallback();
+    closeConfirm();
+});
+
+confirmNo.addEventListener("click", closeConfirm);
+
+// Ferme la modale si on clique à l’extérieur
+window.addEventListener("click", (e) => {
+    if (e.target === confirmModal) closeConfirm();
+});
+
+
 function showNotification(message, type = 'success') {
     const notification = document.getElementById('notification');
     notification.textContent = message;
@@ -220,16 +255,17 @@ async function saveUser(e) {
 }
 
 async function deleteUser(userId) {
-    if (!confirm('Supprimer cet utilisateur ?')) return;
-    try {
-        const res = await fetchWithAuth(`${API_BASE_URL}/users/${userId}`, {method: 'DELETE'});
-        if (!res.ok) throw new Error('Erreur suppression');
-        showNotification('Utilisateur supprimé');
-        loadUsers();
-    } catch (e) {
-        console.error(e);
-        showNotification('Erreur suppression utilisateur', 'error');
-    }
+    showConfirm('Supprimer cet utilisateur ?', async () => {
+        try {
+            const res = await fetchWithAuth(`${API_BASE_URL}/users/${userId}`, {method: 'DELETE'});
+            if (!res.ok) throw new Error('Erreur suppression');
+            showNotification('Utilisateur supprimé');
+            loadUsers();
+        } catch (e) {
+            console.error(e);
+            showNotification('Erreur suppression utilisateur', 'error');
+        }
+    });
 }
 
 // ========================
@@ -325,7 +361,6 @@ async function editSite(siteId = null) {
             document.getElementById('siteUrl').value = site.url;
             document.getElementById('siteDescription').value = site.description;
             document.getElementById('siteCategory').value = site.id_categorie;
-            document.getElementById('siteImage').value = site.image;
             document.getElementById('siteValid').checked = site.valide;
         } catch (e) {
             console.error(e);
@@ -345,7 +380,6 @@ async function saveSite(e) {
         url: document.getElementById('siteUrl').value,
         description: document.getElementById('siteDescription').value,
         id_categorie: document.getElementById('siteCategory').value,
-        image: document.getElementById('siteImage').value,
         valide: document.getElementById('siteValid').checked
     };
     try {
@@ -366,16 +400,17 @@ async function saveSite(e) {
 }
 
 async function deleteSite(siteId) {
-    if (!confirm('Supprimer ce site ?')) return;
-    try {
-        const res = await fetchWithAuth(`${API_BASE_URL}/sites/${siteId}`, {method: 'DELETE'});
-        if (!res.ok) throw new Error('Erreur suppression site');
-        showNotification('Site supprimé');
-        loadSites();
-    } catch (e) {
-        console.error(e);
-        showNotification('Erreur suppression site', 'error');
-    }
+    showConfirm('Supprimer ce site ?', async () => {
+        try {
+            const res = await fetchWithAuth(`${API_BASE_URL}/sites/${siteId}`, {method: 'DELETE'});
+            if (!res.ok) throw new Error('Erreur suppression site');
+            showNotification('Site supprimé');
+            loadSites();
+        } catch (e) {
+            console.error(e);
+            showNotification('Erreur suppression site', 'error');
+        }
+    });
 }
 
 // ========================
@@ -540,16 +575,17 @@ function addCategoryToTableClientSide(nom, description) {
 }
 
 async function deleteCategory(catId) {
-    if (!confirm('Supprimer cette catégorie ?')) return;
-    try {
-        const res = await fetchWithAuth(`${API_BASE_URL}/categories/${catId}`, {method: 'DELETE'});
-        if (!res.ok) throw new Error('Erreur suppression catégorie');
-        showNotification('Catégorie supprimée');
-        loadCategories();
-    } catch (e) {
-        console.error(e);
-        showNotification('Erreur suppression catégorie', 'error');
-    }
+    showConfirm('Supprimer cette catégorie ?', async () => {
+        try {
+            const res = await fetchWithAuth(`${API_BASE_URL}/categories/${catId}`, {method: 'DELETE'});
+            if (!res.ok) throw new Error('Erreur suppression catégorie');
+            showNotification('Catégorie supprimée');
+            loadCategories();
+        } catch (e) {
+            console.error(e);
+            showNotification('Erreur suppression catégorie', 'error');
+        }
+    });
 }
 
 // ========================

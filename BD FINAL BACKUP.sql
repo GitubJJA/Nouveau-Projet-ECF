@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1
--- Généré le : jeu. 25 sep. 2025 à 22:44
+-- Généré le : lun. 17 nov. 2025 à 16:15
 -- Version du serveur : 10.4.32-MariaDB
 -- Version de PHP : 8.2.12
 
@@ -34,15 +34,6 @@ CREATE TABLE `avis` (
   `Etoiles` varchar(50) DEFAULT NULL,
   `description` varchar(50) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Déchargement des données de la table `avis`
---
-
-INSERT INTO `avis` (`id_utilisateur`, `id`, `add_date`, `Etoiles`, `description`) VALUES
-(52, 52, '2025-06-20', '4', 'Bonne plateforme éducative'),
-(57, 55, '2025-06-15', '5', 'Très utile pour coder'),
-(58, 57, '2025-06-25', '3', 'Bon contenu mais cher');
 
 -- --------------------------------------------------------
 
@@ -109,19 +100,17 @@ CREATE TABLE `sites` (
 --
 
 INSERT INTO `sites` (`id`, `nom`, `url`, `description`, `date_ajout`, `image`, `valide`, `id_categorie`, `id_utilisateur_1`) VALUES
-(52, 'World of Warcraft', 'https://worldofwarcraft.blizzard.com/fr-fr/', 'MMORPG emblématique se déroulant dans le monde d’Azeroth, avec un fort accent sur le PvE, le PvP et le lore. Gameplay classique avec une vaste communauté et des extensions régulières.', '2025-06-09 00:00:00', 'http://127.0.0.1:5500/FrontEnd\\DossierImages\\LogoSitecard\\WoW_icon.svg.png', 1, 3, 49),
-(55, 'Guild Wars 2', 'https://www.guildwars2.com/fr/', 'MMORPG dynamique avec un système de combat en temps réel, des événements mondiaux et une grande liberté d\'exploration. Accent sur le PvE et le PvP.', '2025-09-09 00:00:00', 'http://127.0.0.1:5500/FrontEnd\\DossierImages\\LogoSitecard\\images.png', 1, 3, 58),
-(57, 'Lost Ark', 'https://www.playlostark.com/fr-fr', 'MMORPG d\'action isométrique avec un monde vaste et des combats dynamiques. Mélange de PvE et de PvP avec une grande variété de classes.', '2025-09-11 00:00:00', 'http://127.0.0.1:5500/FrontEnd\\DossierImages\\LogoSitecard\\LoLA-logo2.png', 1, 3, 58),
-(58, 'education.gouv.fr', 'https://www.education.gouv.fr/', 'Site officiel du ministère de l’Éducation national', '2025-09-11 00:00:00', 'http://localhost:5500/FrontEnd/DossierImages/LogoSitecard/MENESR.png', 1, 2, 58),
-(59, 'Nasa', 'https://www.nasa.gov/', 'Le site de la NASA offre un accès complet aux actualités, missions, découvertes scientifiques et ressources multimédias liées à l’exploration spatiale américaine.', '2025-09-15 16:08:44', 'http://127.0.0.1:5500/FrontEnd\\DossierImages\\LogoSitecard\\NasaLogo.png', 1, 1, 49),
-(60, 'Hopital Gui de Chauliac', 'https://www.chu-montpellier.fr/fr/a-propos-du-chu/', 'Grand centre hospitalier universitaire spécialisé à Montpellier.', '2025-09-15 16:16:44', 'http://127.0.0.1:5500/FrontEnd\\DossierImages\\LogoSitecard\\téléchargement.jpg', 1, 1, 50),
-(74, 'AFPA', 'https://www.afpa.fr/', 'Organisme de formation ', '2025-09-23 21:12:38', NULL, NULL, 2, 60),
-(75, 'Xampp', 'https://www.apachefriends.org/fr/download.html', 'XAMPP est une distribution Apache facile à installer. Elle contient MySQL, PHP et Perl. Il suffit de télécharger et de lancer l\'installateur.', '2025-09-23 21:15:02', NULL, NULL, 1, 71),
-(76, 'MLI Hérault', 'https://mlicentreherault.fr/', 'La Mission Locale du Centre Hérault est un lieu d\'accueil, d\'écoute et d\'accompagnement des jeunes de 16 à 25 ans', '2025-09-23 21:22:22', NULL, NULL, 2, 60),
-(79, 'Github', 'https://github.com/', 'tech ', '2025-09-25 20:26:49', NULL, NULL, 1, 60),
-(80, 'Chatgpt', 'https://chatgpt.com/?openaicom_referred=true', 'peut aider ou induire en erreur', '2025-09-25 20:29:16', NULL, NULL, 1, 60),
-(81, 'Claude', 'https://claude.ai/login?returnTo=%2F%3F', 'autre ia tout aussi douteuse', '2025-09-25 20:30:21', NULL, NULL, 1, 60),
-(82, 'quenelle ', 'https://www.123degustez.fr/recettes/recettes-salee', 'huihhoh', '2025-09-25 22:25:44', NULL, NULL, 3, 60);
+(74, 'AFPA', 'https://www.afpa.fr/', ' Centre de formations professionnelles qualifiantes pour adultes, perfectionnement, reconversion professionnelle, remise à niveau, VAE, métier, formation continue', '2025-09-23 21:12:38', '', 1, 2, 60),
+(76, 'MLI Hérault', 'https://mlicentreherault.fr/', 'La Mission Locale du Centre Hérault est un lieu d\'accueil, d\'écoute et d\'accompagnement des jeunes de 16 à 25 ans', '2025-09-23 21:22:22', '', 1, 2, 60),
+(81, 'Claude', 'https://claude.ai/login?returnTo=%2F%3F', 'Rencontrez votre partenaire de réflexion en matière d\'IA. Résolvez des problèmes complexes, analysez des données, écrivez du code et collaborez sur des projets difficiles.', '2025-09-25 20:30:21', '', 1, 1, 60),
+(84, 'Xampp', 'https://www.apachefriends.org/fr/index.html', 'XAMPP est une distribution Apache entièrement gratuite et facile à installer contenant MySQL, PHP et Perl.', '2025-10-02 18:07:50', '', 1, 1, 74),
+(92, 'Wow', 'https://worldofwarcraft.blizzard.com/fr-fr/', 'World of Warcraft (abrégé WoW) est un jeu vidéo de type MMORPG (jeu de rôle en ligne massivement multijoueur)', '2025-10-10 18:02:49', '', 1, 3, 60),
+(94, 'Chatgpt', 'https://chatgpt.com', 'ChatGPT est une intelligence artificielle développée par OpenAI, conçue pour comprendre et générer du langage naturel.', '2025-10-10 18:23:35', '', 1, 1, 60),
+(98, 'Dota', 'https://www.dota2.com/home', 'Dota 2 est un jeu vidéo de type arène de bataille en ligne multijoueur développé et édité par Valve Corporation avec l\'aide de certains des créateurs du jeu d\'origine : Defense of the Ancients', '2025-10-10 18:37:23', '', 1, 3, 80),
+(108, 'Mistral', 'https://mistral.ai/fr', 'Mistral AI est une entreprise française fondée en avril 2023, spécialisée dans l\'intelligence artificielle générative.', '2025-10-10 20:58:47', '', 1, 1, 80),
+(109, 'Nasa', 'https://www.nasa.gov/', 'La National Aeronautics and Space Administration (en français : « Administration nationale de l\'aéronautique et de l\'espace »)', '2025-10-10 20:59:22', '', 1, 1, 80),
+(111, 'Final fantasy XIV', 'https://fr.finalfantasyxiv.com/', 'Site promotionnel officiel de FINAL FANTASY XIV. Jeu de rôle en ligne (MMO) où vous pouvez explorer le monde d\'Éorzéa et vivre des aventures avec des joueurs du monde entier.', '2025-10-13 15:39:53', '', 1, 3, 80),
+(112, 'Mabimbo', 'https://www.ma-bimbo.com/', 'jeu', '2025-11-06 09:42:12', NULL, 1, 3, 82);
 
 -- --------------------------------------------------------
 
@@ -144,21 +133,19 @@ CREATE TABLE `utilisateurs` (
 --
 
 INSERT INTO `utilisateurs` (`id_utilisateur`, `nom`, `prénom`, `email`, `mot_de_passe`, `date_inscription`, `Id_Role`) VALUES
-(49, 'Dupont', 'Jean', 'jean.dupont@example.com', 'motdepasse123', '2025-09-08 16:24:51', 1),
 (50, 'Martin', 'Claire', 'claire.martin@example.com', 'azerty123', '2025-09-08 16:24:51', 2),
-(51, 'Bernard', 'Luc', 'luc.bernard@example.com', 'bonjour123', '2025-09-08 16:24:51', 1),
 (52, 'Durand', 'Sophie', 'sophie.durand@example.com', 'monmotdepasse', '2025-09-08 16:24:51', 2),
 (53, 'Leroy', 'Alice', 'alice.leroy@example.com', 'alicepass', '2025-09-08 16:24:51', 2),
-(54, 'Moreau', 'Paul', 'paul.moreau@example.com', 'paulpass', '2025-09-08 16:24:51', 1),
 (55, 'Petit', 'Emma', 'emma.petit@example.com', 'emmapass', '2025-09-08 16:24:51', 2),
-(56, 'Roux', 'Marc', 'marc.roux@example.com', 'marcpass', '2025-09-08 16:24:51', 1),
 (57, 'Garnier', 'Laura', 'laura.garnier@example.com', 'laurapass', '2025-09-08 16:24:51', 2),
-(58, 'Faure', 'David', 'david.faure@example.com', 'davidpass', '2025-09-08 16:24:51', 1),
-(60, 'aymeric', 'jeanjean', 'aymeric.34@hotmail.fr', '$2b$10$Xovi4TmvvcRbVm.94mwkO.kGtFx0hMdmiLtEojcjMUtgEEr4lBTti', '2025-09-23 10:11:05', 3),
+(60, 'aymeric', 'jeanjean', 'aymeric.34@hotmail.fr', '$2b$10$LtwxHe94rsf/vpiOS02cteE3nD31W5Udb34efREMn32ApDTljVaTe', '2025-09-23 10:11:05', 3),
 (61, 'eni', 'ganbat', 'eni@hotmail.fr', '$2b$10$p1sBCqS5qqBQX0V0C1YLtePJKTWm1ByFQKP0HYkZxdCjmAM.ic566', '2025-09-23 10:15:45', 3),
 (62, 'mader', 'nicolas', 'goongoon@hotmail.fr', '$2b$10$p1pqdjChkgL0eKi5vgSBsOW54tU442VtVyMgQG.hGY4HPzTN38H82', '2025-09-23 10:22:56', 3),
-(71, 'birot', 'christophe', 'chris@hotmail.fr', '$2b$10$ImIYHQFkfyzBzBRP1GgfEu3qRvJ4XDwsggAjFL8B/dST6ikIjUsea', '2025-09-23 12:04:37', 3),
-(73, 'Taleb', 'Belkacem', 'Taleb@hotmail.fr', '$2b$10$hlc5bjk2Klj4yqkE7NLSk.fPyvw.GiDM5fKoto73kcZfLHOabglca', '2025-09-25 12:08:59', 3);
+(73, 'Taleb', 'Belkacem', 'Taleb@hotmail.fr', '$2b$10$hlc5bjk2Klj4yqkE7NLSk.fPyvw.GiDM5fKoto73kcZfLHOabglca', '2025-09-25 12:08:59', 3),
+(74, 'christophe', 'birot', 'chris@hotmail.fr', '$2b$10$IyEGsbPPbXyMEKLvLngKieqe4uUg6FJNH5vXPrJuPAwMJcgqtTMQC', '2025-10-02 18:07:09', 3),
+(79, 'mader', 'jjlj', 'mihijef497@lanipe.com', '$2b$10$MLJJ89cWE11Y.JbO0yEjGuvAQMTPwUWjEf3aiy/MZhDr/I8ynuVom', '2025-10-02 19:18:57', 3),
+(80, 'jeanjean', 'aymeric', 'aymeric.35@hotmail.fr', '$2b$10$Ob0WrfLmHMeUCvswgHrr0.kj1CkNoryZmo99V2Rs9H5ldkPR967Nm', '2025-10-02 19:44:41', 1),
+(82, 'Meyer', 'Sarah', 'sarah@hotmail.fr', '$2b$10$vdgKHS68qBafHE9vN8zgz.6ootocIPuOa6XcbP0mQMK/JAhNEF.eq', '2025-11-06 09:40:11', 3);
 
 --
 -- Index pour les tables déchargées
@@ -206,7 +193,7 @@ ALTER TABLE `utilisateurs`
 -- AUTO_INCREMENT pour la table `categories`
 --
 ALTER TABLE `categories`
-  MODIFY `id_categorie` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id_categorie` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT pour la table `role`
@@ -218,13 +205,13 @@ ALTER TABLE `role`
 -- AUTO_INCREMENT pour la table `sites`
 --
 ALTER TABLE `sites`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=83;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=113;
 
 --
 -- AUTO_INCREMENT pour la table `utilisateurs`
 --
 ALTER TABLE `utilisateurs`
-  MODIFY `id_utilisateur` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=74;
+  MODIFY `id_utilisateur` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=83;
 
 --
 -- Contraintes pour les tables déchargées
@@ -242,7 +229,7 @@ ALTER TABLE `avis`
 --
 ALTER TABLE `sites`
   ADD CONSTRAINT `sites_ibfk_1` FOREIGN KEY (`id_categorie`) REFERENCES `categories` (`id_categorie`),
-  ADD CONSTRAINT `sites_ibfk_2` FOREIGN KEY (`id_utilisateur_1`) REFERENCES `utilisateurs` (`id_utilisateur`);
+  ADD CONSTRAINT `sites_ibfk_2` FOREIGN KEY (`id_utilisateur_1`) REFERENCES `utilisateurs` (`id_utilisateur`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Contraintes pour la table `utilisateurs`

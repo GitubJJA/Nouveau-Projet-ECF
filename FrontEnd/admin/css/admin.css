@@ -1,8 +1,6 @@
 /* ===== IMPORTATION POLICE ===== */
 @import url('https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&display=swap');
 
-
-
 /* admin.css */
 :root {
     --primary-color: #08403f;        /* header background */
@@ -86,7 +84,6 @@ header {
     75% { filter: brightness(1.03); text-shadow: 0 0 7px rgba(161, 241, 198, 0.48); }
     100% { filter: brightness(1); text-shadow: 0 0 4px rgba(161, 241, 198, 0.4); }
 }
-
 
 .logo {
     height: 40px;
@@ -252,17 +249,13 @@ tr:hover {
   transition: all 0.3s ease;
   box-shadow: 0 4px 12px rgba(0,255,128,0.2);
   position: relative;
-
-  /* 🧩 Ajout essentiel pour restaurer le texte normal */
   -webkit-background-clip: border-box;
   -webkit-text-fill-color: var(--white);
 }
 
-
 #logoutBtn:hover {
-  /* change la propriété WebKit qui est réellement utilisée pour la couleur du texte */
   -webkit-text-fill-color: var(--text-color);
-  color: var(--text-color); /* fallback */
+  color: var(--text-color);
   background: linear-gradient(135deg, #39ff14, #00ffaa);
   transform: scale(1.05);
   box-shadow: 0 0 20px rgba(0,255,128,0.6), 0 0 40px rgba(0,255,128,0.3);
@@ -274,7 +267,7 @@ tr:hover {
   box-shadow: none;
 }
 
-/* Modals */
+/* Modals générales */
 .modal {
     display: none;
     position: fixed;
@@ -282,36 +275,115 @@ tr:hover {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(84, 125, 116, 0.5); /* vert plus clair et transparent */
+    backdrop-filter: blur(8px); /* effet blur derrière */
     z-index: 1000;
-    overflow: auto;
+    justify-content: center;
+    align-items: center;
+    overflow-y: auto; /* scroll si contenu trop grand */
+    padding: 1rem;
 }
 
+/* Contenu de la modale */
 .modal-content {
-    background-color: var(--white);
-    margin: 10% auto;
+    background: rgba(240, 255, 245, 0.95); /* fond clair, légèrement vert pâle */
+    color: #064635; /* texte foncé mais pas noir */
+    margin: auto;
     padding: 2rem;
-    border-radius: 8px;
+    border-radius: 12px;
     max-width: 500px;
+    width: 100%;
+    box-shadow: 0 8px 25px rgba(0, 200, 128, 0.25);
     position: relative;
+    text-align: center;
+    font-family: 'Exo 2', sans-serif;
+    border: 1px solid rgba(0, 200, 128, 0.3);
+    animation: modalFadeIn 0.3s ease;
 }
 
+/* Animation d'apparition */
+@keyframes modalFadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+/* Bouton de fermeture */
 .close {
     position: absolute;
     right: 1rem;
     top: 1rem;
     font-size: 1.5rem;
     cursor: pointer;
+    color: #064635;
+    transition: 0.2s;
+}
+.close:hover {
+    color: #000;
 }
 
-/* Forms */
+/* Message de confirmation */
+#confirmMessage {
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Container boutons */
+.modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+/* Boutons */
+.modal-actions .btn {
+    padding: 0.6rem 1.5rem;
+    font-size: 1rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+    font-weight: 600;
+    box-shadow: 0 4px 10px rgba(0, 200, 128, 0.2);
+}
+
+/* Bouton "Oui" */
+.modal-actions .btn-confirm {
+    background: linear-gradient(90deg, #a1f1c6, #c3f7d0);
+    color: #064635;
+}
+.modal-actions .btn-confirm:hover {
+    background: linear-gradient(90deg, #c3f7d0, #a1f1c6);
+}
+
+/* Bouton "Non" */
+.modal-actions .btn-cancel {
+    background: linear-gradient(90deg, #f7a1a1, #f78c8c);
+    color: #640000;
+}
+.modal-actions .btn-cancel:hover {
+    background: linear-gradient(90deg, #f78c8c, #f7a1a1);
+}
+
+/* Centrage spécifique pour modales de suppression/confirmation */
+#confirmModal .modal-content {
+    max-width: 400px;
+    padding: 1.5rem;
+}
+
+
+/* ===== STYLE FORMULAIRES — ADN VISUEL ===== */
 .form-group {
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
+    position: relative;
 }
 
 label {
     display: block;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.4rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    letter-spacing: 0.5px;
+    transition: color 0.3s ease;
 }
 
 input[type="text"],
@@ -321,17 +393,85 @@ input[type="url"],
 select,
 textarea {
     width: 100%;
-    padding: 0.5rem;
-    border: 1px solid var(--light-bg);
-    border-radius: 4px;
+    padding: 0.75rem 1rem;
+    border: 1px solid rgba(8, 64, 63, 0.3);
+    border-radius: 8px;
     font-size: 1rem;
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--text-color);
+    box-shadow: inset 0 1px 3px rgba(0, 255, 128, 0.1);
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 6px rgba(57, 255, 20, 0.5), 0 0 12px rgba(57, 255, 20, 0.3);
+    background: #ffffff;
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: rgba(8, 64, 63, 0.4);
+    font-style: italic;
+}
+
+select {
+    cursor: pointer;
+    background-color: #fff;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 100px;
 }
 
 .form-actions {
     display: flex;
     justify-content: flex-end;
     gap: 1rem;
-    margin-top: 1rem;
+    margin-top: 2rem;
+}
+
+.form-actions .btn-primary {
+    background: linear-gradient(135deg, #39ff14, #00ffaa);
+    color: #021f0f;
+    font-weight: 600;
+    padding: 0.6rem 1.4rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(57, 255, 20, 0.25);
+}
+
+.form-actions .btn-primary:hover {
+    background: linear-gradient(135deg, #00ffaa, #39ff14);
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 0 15px rgba(57, 255, 20, 0.5);
+}
+
+.form-actions .btn-secondary {
+    background-color: rgba(8, 64, 63, 0.1);
+    color: var(--primary-color);
+    border: 1px solid rgba(8, 64, 63, 0.2);
+    font-weight: 500;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.form-actions .btn-secondary:hover {
+    background-color: rgba(8, 64, 63, 0.2);
+    color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+input:focus + label,
+textarea:focus + label,
+select:focus + label {
+    color: var(--accent-color);
 }
 
 /* Notification */
@@ -356,49 +496,38 @@ textarea {
 
 /* Animations */
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
-/* Responsive Design */
+/* ===== RESPONSIVE PAGE COMPLÈTE ===== */
+@media (max-width: 1024px) {
+    .sidebar { width: 180px; }
+    .content { margin-left: 180px; padding: 2.5rem; }
+    .stats-container { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+}
+
 @media (max-width: 768px) {
-    .sidebar {
-        width: 60px;
-    }
-
-    .nav-btn {
-        padding: 1rem 0;
-        text-align: center;
-    }
-
-    .nav-btn span {
-        display: none;
-    }
-
-    .content {
-        margin-left: 60px;
-    }
-
-    .header-content h1 {
-        font-size: 1.2rem;
-    }
+    .sidebar { width: 60px; padding: 1rem; }
+    .nav-btn { padding: 1rem 0; text-align: center; }
+    .nav-btn span { display: none; }
+    .content { margin-left: 60px; padding: 2rem; }
+    .header-content h1 { font-size: 1.2rem; }
+    .stats-container { grid-template-columns: 1fr 1fr; }
+    .table-actions { flex-direction: column; gap: 0.8rem; }
 }
 
 @media (max-width: 480px) {
-    .stats-container {
-        grid-template-columns: 1fr;
-    }
-
-    .table-actions {
-        flex-direction: column;
-        gap: 1rem;
-    }
-
-    .modal-content {
-        margin: 5% 1rem;
-    }
+    .content { padding: 1rem; }
+    .stats-container { grid-template-columns: 1fr; }
+    .table-actions { flex-direction: column; gap: 0.5rem; }
+    .modal-content { margin: 5% 1rem; padding: 1.5rem; }
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="url"],
+    select,
+    textarea { font-size: 0.9rem; padding: 0.6rem 0.8rem; }
+    .form-actions { flex-direction: column; align-items: stretch; gap: 0.6rem; }
 }
+
