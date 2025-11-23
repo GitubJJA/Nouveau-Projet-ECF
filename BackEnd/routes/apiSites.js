@@ -1,11 +1,14 @@
 import express from 'express';
-import { authenticate } from '../middleware/authMiddleware.js';
-import { getAllSites, getSiteById, createSite, updateSite, patchSite, deleteSite } from '../controllers/sitesController.js';
+import { authenticate, ensureAdmin } from '../middleware/authMiddleware.js';
+import { getAllSites, getAllSitesAdmin, getSiteById, createSite, updateSite, patchSite, deleteSite, validateSite } from '../controllers/sitesController.js';
 
 const router = express.Router();
 
 // GET /api/sites -> return all sites
 router.get('/', getAllSites);
+
+// GET /api/admin/sites -> all sites (admin only)
+router.get('/admin', authenticate, ensureAdmin, getAllSitesAdmin);
 
 // GET /api/sites/:id
 router.get('/:id', getSiteById);
@@ -15,6 +18,9 @@ router.post('/', authenticate, createSite);
 
 // PUT /api/sites/:id
 router.put('/:id', authenticate, updateSite);
+
+// PUT /api/sites/:id/validate -> validation (admin only)
+router.put('/:id/validate', authenticate, ensureAdmin, validateSite);
 
 //PATCH /api/sites/:id
 router.patch('/:id', authenticate, patchSite);

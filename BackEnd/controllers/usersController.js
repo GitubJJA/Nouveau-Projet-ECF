@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 
 const SALT_ROUNDS = 10;
 
-// GET tous les utilisateurs
+// GET tous les utilisateurs : retourne la liste des utilisateurs (sans mot de passe)
 export async function listUsers(req, res, next) {
   try {
     const [rows] = await pool.query(
@@ -16,7 +16,7 @@ export async function listUsers(req, res, next) {
   }
 }
 
-// GET un utilisateur par id
+// GET un utilisateur par id : récupère un utilisateur public par son identifiant
 export async function getUser(req, res, next) {
   const id = Number(req.params.id);
   if (!Number.isFinite(id)) return res.status(400).json({ error: 'invalid_id' });
@@ -32,7 +32,7 @@ export async function getUser(req, res, next) {
   }
 }
 
-// POST créer un utilisateur
+// POST créer un utilisateur : hash du mot de passe puis insertion en base
 export async function createUser(req, res, next) {
   try {
     const { nom, prénom, email, mot_de_passe, Id_Role } = req.body || {};
@@ -58,13 +58,13 @@ export async function createUser(req, res, next) {
   }
 }
 
-// PATCH/PUT mettre à jour un utilisateur
+// PATCH/PUT mettre à jour un utilisateur : contrôle admin / propriétaire puis update
 export async function updateUser(req, res, next) {
   const id = Number(req.params.id);
   if (!Number.isFinite(id)) return res.status(400).json({ error: 'invalid_id' });
 
   try {
-    // Authorization: allow if admin or the user themselves
+    // Autorisation : autoriser si l’utilisateur est administrateur ou si c’est l’utilisateur lui-même.
     if (!req.user) return res.status(401).json({ error: 'user_not_authenticated' });
     const isAdmin = req.user.Id_Role === 1;
     if (!isAdmin && req.user.id_utilisateur !== id) return res.status(403).json({ error: 'forbidden' });
@@ -101,13 +101,13 @@ export async function updateUser(req, res, next) {
   }
 }
 
-// DELETE supprimer un utilisateur
+// DELETE supprimer un utilisateur : contrôle admin / propriétaire puis suppression
 export async function deleteUser(req, res, next) {
   const id = Number(req.params.id);
   if (!Number.isFinite(id)) return res.status(400).json({ error: 'invalid_id' });
 
   try {
-    // Authorization: allow if admin or the user themselves
+    // Autorisation : autoriser si l’utilisateur est administrateur ou si c’est l’utilisateur lui-même.
     if (!req.user) return res.status(401).json({ error: 'user_not_authenticated' });
     const isAdmin = req.user.Id_Role === 1;
     if (!isAdmin && req.user.id_utilisateur !== id) return res.status(403).json({ error: 'forbidden' });
@@ -120,8 +120,10 @@ export async function deleteUser(req, res, next) {
 }
 
 
-const SECRET_KEY = "TonSecretTrèsSecret123!"; // ⚠️ à mettre dans un .env
+// Secret pour JWT (à déplacer dans .env en production)
+const SECRET_KEY = "TonSecretTrèsSecret123!"; // ⚠️
 
+// POST login : vérifie les identifiants et renvoie un token + info utilisateur
 export async function loginUser(req, res, next) {
   try {
     const { email, mot_de_passe } = req.body;
@@ -152,7 +154,7 @@ export async function loginUser(req, res, next) {
       { expiresIn: "2h" }
     );
 
-    // 🔥 Ici on ajoute Id_Role à la réponse pour le frontend
+    // Ici on ajoute Id_Role à la réponse pour le frontend
     res.json({
       message: "Connexion réussie",
       token,
@@ -168,6 +170,7 @@ export async function loginUser(req, res, next) {
 }
 
 
+// POST signup : création d'un nouvel utilisateur avec hash du mot de passe
 export async function signupUser(req, res, next) {
   try {
     const { nom, prenom, email, mot_de_passe } = req.body;

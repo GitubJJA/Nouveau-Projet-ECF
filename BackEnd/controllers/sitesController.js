@@ -1,16 +1,27 @@
 import pool from '../config/dataBase.js';
 
-// GET /api/sites -> tous les sites
+// Requête de base pour récupérer les sites avec leur catégorie (jointure)
+const selectBase = `SELECT s.id, s.nom, s.url, s.description, s.date_ajout, s.image, s.valide, c.nom AS categorie, s.id_utilisateur_1
+  FROM sites s
+  LEFT JOIN categories c ON s.id_categorie = c.id_categorie`;
+
+// GET public: retourne uniquement les sites validés (visibles aux visiteurs)
 export async function getAllSites(req, res, next) {
   try {
-    const [rows] = await pool.query('SELECT s.id, s.nom, s.url,s.description, s.date_ajout, s.image, s.valide, c.nom AS categorie,  s.id_utilisateur_1 FROM sites s LEFT JOIN categories c ON s.id_categorie = c.id_categorie ORDER BY s.id ASC;');
+    const [rows] = await pool.query(`${selectBase} WHERE s.valide = 1 ORDER BY s.id ASC;`);
     res.json(rows);
-  } catch (err) {
-    next(err);
-  }
+  } catch (err) { next(err); }
 }
 
-// GET /api/sites/:id -> site par ID
+// GET admin: retourne tous les sites (inclut les non validés pour modération)
+export async function getAllSitesAdmin(req, res, next) {
+  try {
+    const [rows] = await pool.query(`${selectBase} ORDER BY s.id ASC;`);
+    res.json(rows);
+  } catch (err) { next(err); }
+}
+
+// GET by id: récupère un site précis ou renvoie 404 si introuvable
 export async function getSiteById(req, res, next) {
   const id = Number(req.params.id);
   if (!Number.isFinite(id)) return res.status(400).json({ error: 'invalid_id' });
@@ -18,124 +29,68 @@ export async function getSiteById(req, res, next) {
     const [rows] = await pool.query('SELECT * FROM sites WHERE id = ?', [id]);
     if (rows.length === 0) return res.status(404).json({ error: 'not_found' });
     res.json(rows[0]);
-  } catch (err) {
-    next(err);
-  }
+  } catch (err) { next(err); }
 }
 
-// POST /api/sites -> créer un site
+// POST create: crée un nouveau site, assigne l'auteur et marque comme non validé (valide = 0)
 export async function createSite(req, res, next) {
   try {
     const body = req.body || {};
-
-    // Vérifie que l'utilisateur est connecté via le middleware authenticate
-    if (!req.user || !req.user.id_utilisateur) {
-      return res.status(401).json({ error: "user_not_authenticated" });
-    }
-
-    // Auto-remplit la date si elle n'est pas fournie
-    if (!body.date_ajout) {
-      body.date_ajout = new Date(); // date actuelle
-    }
-
-    // On prend l'id de l'utilisateur connecté
+    if (!req.user || !req.user.id_utilisateur) return res.status(401).json({ error: 'user_not_authenticated' });
+    if (!body.date_ajout) body.date_ajout = new Date();
     body.id_utilisateur_1 = req.user.id_utilisateur;
-    
+    body.valide = 0;
 
-    // Champs autorisés
-    const allowed = ['nom', 'description', 'image', 'url', 'date_ajout', 'valide', 'id_categorie', 'id_utilisateur_1'];
+    const allowed = ['nom','description','image','url','date_ajout','valide','id_categorie','id_utilisateur_1'];
     const fields = [];
     const placeholders = [];
     const values = [];
+    for (const key of allowed) if (Object.prototype.hasOwnProperty.call(body,key)) { fields.push(key); placeholders.push('?'); values.push(body[key]); }
+    if (fields.length === 0) return res.status(400).json({ error: 'no_fields' });
 
-    for (const key of allowed) {
-      if (Object.prototype.hasOwnProperty.call(body, key)) {
-        fields.push(key);
-        placeholders.push('?');
-        values.push(body[key]);
-      }
-    }
+    const [rows] = await pool.query('SELECT COUNT(*) AS count FROM utilisateurs WHERE id_utilisateur = ?', [body.id_utilisateur_1]);
+    if (rows[0].count === 0) return res.status(400).json({ error: 'invalid_user' });
 
-    if (fields.length === 0) {
-      return res.status(400).json({ error: 'no_fields' });
-    }
-
-    // Vérification FK id_utilisateur_1 (doit exister dans la table utilisateurs)
-    const [rows] = await pool.query(
-      'SELECT COUNT(*) AS count FROM utilisateurs WHERE id_utilisateur = ?',
-      [body.id_utilisateur_1]
-    );
-    if (rows[0].count === 0) {
-      return res.status(400).json({ error: 'invalid_user' });
-    }
-
-    // Insertion dans la table sites
     const sql = `INSERT INTO sites (${fields.join(',')}) VALUES (${placeholders.join(',')})`;
     const [result] = await pool.query(sql, values);
-
-    // Récupère le site inséré pour le renvoyer
     const insertId = result.insertId;
     const [siteRows] = await pool.query('SELECT * FROM sites WHERE id = ?', [insertId]);
-
     res.status(201).json(siteRows[0]);
-  } catch (err) {
-    next(err);
-  }
+  } catch (err) { next(err); }
 }
 
-
-
-// PATCH /api/sites/:id
+// PATCH partial update: met à jour uniquement les champs fournis
+// Valide l'utilisateur si on tente de changer l'auteur (id_utilisateur_1)
 export async function patchSite(req, res, next) {
   const id = Number(req.params.id);
   if (!Number.isFinite(id)) return res.status(400).json({ error: 'invalid_id' });
-
   try {
     const body = req.body || {};
-    const allowed = ['nom', 'description', 'image', 'url', 'date_ajout', 'valide', 'id_categorie', 'id_utilisateur_1'];
+    const allowed = ['nom','description','image','url','date_ajout','valide','id_categorie','id_utilisateur_1'];
     const fields = [];
     const values = [];
-
-    for (const key of allowed) {
-      if (Object.prototype.hasOwnProperty.call(body, key)) {
-        fields.push(`${key} = ?`);
-        values.push(body[key]);
-      }
-    }
-
+    for (const key of allowed) if (Object.prototype.hasOwnProperty.call(body,key)) { fields.push(`${key} = ?`); values.push(body[key]); }
     if (fields.length === 0) return res.status(400).json({ error: 'no_fields' });
-
-    // Vérification FK id_utilisateur_1 si présent dans le body
     if (body.id_utilisateur_1) {
-      const [rows] = await pool.query(
-        'SELECT COUNT(*) AS count FROM utilisateurs WHERE id_utilisateur = ?',
-        [body.id_utilisateur_1]
-      );
+      const [rows] = await pool.query('SELECT COUNT(*) AS count FROM utilisateurs WHERE id_utilisateur = ?', [body.id_utilisateur_1]);
       if (rows[0].count === 0) return res.status(400).json({ error: 'invalid_user' });
     }
-
     const sql = `UPDATE sites SET ${fields.join(', ')} WHERE id = ?`;
-    values.push(id); // ajout de l'id **une seule fois** pour le WHERE
+    values.push(id);
     await pool.query(sql, values);
-
     const [updatedRows] = await pool.query('SELECT * FROM sites WHERE id = ?', [id]);
     if (updatedRows.length === 0) return res.status(404).json({ error: 'not_found' });
-
     res.json(updatedRows[0]);
-  } catch (err) {
-    next(err);
-  }
+  } catch (err) { next(err); }
 }
 
-// PUT /api/sites/:id
-export async function updateSite(req, res) {
+// PUT update: met à jour les champs fournis (contrôle propriétaire/admin)
+// Seul le propriétaire ou un administrateur peut modifier le site
+export async function updateSite(req, res, next) {
   const siteId = Number(req.params.id);
+  if (!Number.isFinite(siteId)) return res.status(400).json({ error: 'invalid_id' });
   const { nom, url, description, date_ajout, image, valide, id_categorie, id_utilisateur_1 } = req.body;
-
-  // Construction dynamique des champs à mettre à jour
-  let fields = [];
-  let values = [];
-
+  const fields = []; const values = [];
   if (nom !== undefined) { fields.push('nom = ?'); values.push(nom); }
   if (url !== undefined) { fields.push('url = ?'); values.push(url); }
   if (description !== undefined) { fields.push('description = ?'); values.push(description); }
@@ -144,52 +99,40 @@ export async function updateSite(req, res) {
   if (valide !== undefined) { fields.push('valide = ?'); values.push(valide); }
   if (id_categorie !== undefined) { fields.push('id_categorie = ?'); values.push(id_categorie); }
   if (id_utilisateur_1 !== undefined) { fields.push('id_utilisateur_1 = ?'); values.push(id_utilisateur_1); }
-
-  if (fields.length === 0) {
-    return res.status(400).json({ message: 'Aucun champ à mettre à jour' });
-  }
-
-  values.push(siteId); // pour WHERE
-
+  if (fields.length === 0) return res.status(400).json({ message: 'Aucun champ à mettre à jour' });
+  values.push(siteId);
   try {
-    // Authorization: only admin or owner can update
     if (!req.user) return res.status(401).json({ error: 'user_not_authenticated' });
-    // get existing site to check owner
     const [existing] = await pool.query('SELECT id_utilisateur_1 FROM sites WHERE id = ?', [siteId]);
     if (!existing || existing.length === 0) return res.status(404).json({ message: 'Site non trouvé' });
     const ownerId = existing[0].id_utilisateur_1;
     const isAdmin = req.user.Id_Role === 1;
     if (!isAdmin && req.user.id_utilisateur !== ownerId) return res.status(403).json({ error: 'forbidden' });
-    const [result] = await pool.query(
-      `UPDATE sites SET ${fields.join(', ')} WHERE id = ?`,
-      values
-    );
-
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: 'Site non trouvé' });
-    }
-
-    // Retourner le site mis à jour
-    const [updatedSite] = await pool.query(
-      'SELECT * FROM sites WHERE id = ?',
-      [siteId]
-    );
-
+    const [result] = await pool.query(`UPDATE sites SET ${fields.join(', ')} WHERE id = ?`, values);
+    if (result.affectedRows === 0) return res.status(404).json({ message: 'Site non trouvé' });
+    const [updatedSite] = await pool.query('SELECT * FROM sites WHERE id = ?', [siteId]);
     res.status(200).json(updatedSite[0]);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Erreur serveur', error });
-  }
+  } catch (err) { next(err); }
 }
 
+// PUT validate: action admin qui marque un site comme validé (visible publiquement)
+export async function validateSite(req, res, next) {
+  const id = Number(req.params.id);
+  if (!Number.isFinite(id)) return res.status(400).json({ error: 'invalid_id' });
+  try {
+    // DELETE: seul le propriétaire ou un admin peut supprimer
+    if (!req.user) return res.status(401).json({ error: 'user_not_authenticated' });
+    const [result] = await pool.query('UPDATE sites SET valide = 1 WHERE id = ?', [id]);
+    if (result.affectedRows === 0) return res.status(404).json({ error: 'not_found' });
+    const [rows] = await pool.query('SELECT * FROM sites WHERE id = ?', [id]);
+    res.json(rows[0]);
+  } catch (err) { next(err); }
+}
 
-// DELETE /api/sites/:id -> supprimer un site
 export async function deleteSite(req, res, next) {
   const id = Number(req.params.id);
   if (!Number.isFinite(id)) return res.status(400).json({ error: 'invalid_id' });
-
   try {
-    // Authorization: only admin or owner can delete
     if (!req.user) return res.status(401).json({ error: 'user_not_authenticated' });
     const [existing] = await pool.query('SELECT id_utilisateur_1 FROM sites WHERE id = ?', [id]);
     if (!existing || existing.length === 0) return res.status(404).json({ error: 'not_found' });
@@ -199,11 +142,7 @@ export async function deleteSite(req, res, next) {
     const [result] = await pool.query('DELETE FROM sites WHERE id = ?', [id]);
     if (result.affectedRows === 0) return res.status(404).json({ error: 'not_found' });
     res.status(204).send();
-  } catch (err) {
-    next(err);
-  }
+  } catch (err) { next(err); }
 }
 
-
-
-export default { getAllSites, getSiteById, createSite, updateSite, patchSite, deleteSite };
+export default { getAllSites, getAllSitesAdmin, getSiteById, createSite, patchSite, updateSite, validateSite, deleteSite };

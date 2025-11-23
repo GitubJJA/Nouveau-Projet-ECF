@@ -1,7 +1,7 @@
-// BackEnd/controllers/categoryController.js
+// Contrôleur des catégories
 import pool from '../config/dataBase.js';
 
-// GET /api/categories -> liste toutes les catégories
+// GET /api/categories : liste toutes les catégories (lecture publique)
 export async function getAllCategories(req, res, next) {
   try {
     const [rows] = await pool.query(
@@ -9,11 +9,12 @@ export async function getAllCategories(req, res, next) {
     );
     res.json(rows);
   } catch (error) {
-    next(error); // passe l’erreur au middleware global
+    next(error); // transmet l'erreur au gestionnaire global
   }
 }
 
-// POST /api/categories -> créer une catégorie (admin only)
+// POST /api/categories : crée une nouvelle catégorie (admin uniquement)
+// Vérifie les champs requis puis insère en base
 export async function createCategory(req, res, next) {
   try {
     const { nom, description } = req.body || {};
@@ -32,7 +33,8 @@ export async function createCategory(req, res, next) {
   }
 }
 
-// PUT /api/categories/:id -> update category (admin only)
+// PUT /api/categories/:id : met à jour une catégorie (admin uniquement)
+// Met à jour seulement les champs fournis
 export async function updateCategory(req, res, next) {
   const id = Number(req.params.id);
   if (!Number.isFinite(id)) return res.status(400).json({ error: 'invalid_id' });
@@ -56,7 +58,8 @@ export async function updateCategory(req, res, next) {
   }
 }
 
-// DELETE /api/categories/:id -> delete category (admin only)
+// DELETE /api/categories/:id : supprime une catégorie (admin uniquement)
+// Retourne 204 si suppression OK
 export async function deleteCategory(req, res, next) {
   const id = Number(req.params.id);
   if (!Number.isFinite(id)) return res.status(400).json({ error: 'invalid_id' });

@@ -121,17 +121,31 @@ function setupNavigation() {
 // ========================
 async function loadDashboardData() {
     try {
-        const [usersResponse, sitesResponse] = await Promise.all([
-            fetchWithAuth(`${API_BASE_URL}/users`),
-            fetchWithAuth(`${API_BASE_URL}/sites`)
-        ]);
-
+        const usersResponse = await fetchWithAuth(`${API_BASE_URL}/users`);
         const users = await usersResponse.json();
+
+        // Determine admin status first so we can call the correct sites endpoint
+        const isAdmin = (() => {
+            try {
+                const storedUser = sessionStorage.getItem('user');
+                if (storedUser) return JSON.parse(storedUser).Id_Role === 1;
+                const token = getAuthToken();
+                if (token) {
+                    const payload = JSON.parse(atob(token.split('.')[1] || ''));
+                    return payload && payload.Id_Role === 1;
+                }
+            } catch (e) { console.warn('role parse error', e); }
+            return false;
+        })();
+
+        const sitesUrl = isAdmin ? `${API_BASE_URL}/sites/admin` : `${API_BASE_URL}/sites`;
+        const sitesResponse = await fetchWithAuth(sitesUrl);
         const sites = await sitesResponse.json();
 
         document.getElementById('userCount').textContent = users.length;
         document.getElementById('siteCount').textContent = sites.length;
-        document.getElementById('pendingSiteCount').textContent = sites.filter(s => !s.valide).length;
+        // pending count only meaningful for admin
+        document.getElementById('pendingSiteCount').textContent = isAdmin ? sites.filter(s => !s.valide).length : 0;
     } catch (error) {
         console.error(error);
         showNotification('Erreur lors du chargement du tableau de bord', 'error');
@@ -273,9 +287,26 @@ async function deleteUser(userId) {
 // ========================
 async function loadSites() {
     try {
+        // Determine if current user is admin so admin can see unvalidated sites
+        let isAdmin = false;
+        try {
+            const storedUser = sessionStorage.getItem('user');
+            if (storedUser) {
+                const parsed = JSON.parse(storedUser);
+                if (parsed && parsed.Id_Role === 1) isAdmin = true;
+            } else {
+                const token = getAuthToken();
+                if (token) {
+                    const payload = JSON.parse(atob(token.split('.')[1] || ''));
+                    if (payload && payload.Id_Role === 1) isAdmin = true;
+                }
+            }
+        } catch (err) { console.warn('Impossible de déterminer le rôle de l\'utilisateur:', err); }
+
         // Récupérer les réponses
+        const sitesUrl = isAdmin ? `${API_BASE_URL}/sites/admin` : `${API_BASE_URL}/sites`;
         const [sitesRes, catRes] = await Promise.all([
-            fetchWithAuth(`${API_BASE_URL}/sites`),
+            fetchWithAuth(sitesUrl),
             fetchWithAuth(`${API_BASE_URL}/categories`)
         ]);
 
@@ -284,25 +315,6 @@ async function loadSites() {
 
         const tbody = document.querySelector('#sitesTable tbody');
         tbody.innerHTML = '';
-
-        // Déterminer si l'utilisateur courant est un admin
-        let isAdmin = false;
-        try {
-            const storedUser = sessionStorage.getItem('user');
-            if (storedUser) {
-                const parsed = JSON.parse(storedUser);
-                if (parsed && parsed.Id_Role === 1) isAdmin = true;
-            } else {
-                // fallback: try to read role from token payload
-                const token = getAuthToken();
-                if (token) {
-                    const payload = JSON.parse(atob(token.split('.')[1] || ''));
-                    if (payload && payload.Id_Role === 1) isAdmin = true;
-                }
-            }
-        } catch (err) {
-            console.warn('Impossible de déterminer le rôle de l\'utilisateur:', err);
-        }
 
         // fonction d'échappement XSS
         const escapeHtml = (str) => str ? str.toString()
@@ -315,7 +327,9 @@ async function loadSites() {
         sites.forEach(site => {
             const tr = document.createElement('tr');
             // Si l'utilisateur est admin, on affiche les boutons, sinon on laisse vide
+            // Add a "Valider" button for admins when the site is not yet validated
             const actionsHtml = isAdmin ? `
+                ${!site.valide ? `<button class="btn-primary validate-site" data-id="${site.id}">Valider</button>` : ''}
                 <button class="btn-secondary edit-site" data-id="${site.id}">Éditer</button>
                 <button class="btn-danger delete-site" data-id="${site.id}">Supprimer</button>
             ` : '';
@@ -345,6 +359,24 @@ async function loadSites() {
         console.error(e);
         showNotification('Erreur chargement sites', 'error');
     }
+}
+
+async function validateSite(siteId) {
+    if (!siteId) return;
+    showConfirm('Valider ce site pour le rendre public ?', async () => {
+        try {
+            const res = await fetchWithAuth(`${API_BASE_URL}/sites/${siteId}/validate`, { method: 'PUT' });
+            if (!res || !res.ok) {
+                const errBody = await (res ? res.json().catch(() => ({})) : Promise.resolve({}));
+                throw new Error(errBody.error || 'Erreur validation');
+            }
+            showNotification('Site validé');
+            await loadSites();
+        } catch (e) {
+            console.error(e);
+            showNotification('Erreur lors de la validation', 'error');
+        }
+    });
 }
 
 async function editSite(siteId = null) {
@@ -662,6 +694,7 @@ function setupTableButtons() {
     document.querySelector('#sitesTable tbody').addEventListener('click', e => {
         if(e.target.classList.contains('edit-site')) editSite(e.target.dataset.id);
         if(e.target.classList.contains('delete-site')) deleteSite(e.target.dataset.id);
+        if(e.target.classList.contains('validate-site')) validateSite(e.target.dataset.id);
     });
 
     // Categories
