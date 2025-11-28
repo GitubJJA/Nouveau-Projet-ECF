@@ -508,14 +508,20 @@ async function editCategory(catId = null) {
     const idInput = document.getElementById('categoryId');
 
     if (catId) {
+        // Le endpoint GET /api/categories/:id n'existe pas : on récupère les valeurs depuis la ligne du tableau
         try {
-            const res = await fetchWithAuth(`${API_BASE_URL}/categories/${catId}`);
-            const cat = await res.json();
-            idInput.value = cat.id_categorie;
-            document.getElementById('categoryName').value = cat.nom;
-            document.getElementById('categoryDescription').value = cat.description;
+            const btn = document.querySelector(`button.edit-category[data-id="${catId}"]`);
+            if (!btn) throw new Error('row_not_found');
+            const tr = btn.closest('tr');
+            // colonnes: 0=id, 1=nom, 2=description, 3=actions
+            const idText = tr.children[0]?.textContent?.trim();
+            const nameText = tr.children[1]?.textContent?.trim() || '';
+            const descText = tr.children[2]?.textContent?.trim() || '';
+            idInput.value = idText || catId;
+            document.getElementById('categoryName').value = nameText;
+            document.getElementById('categoryDescription').value = descText;
         } catch (e) {
-            console.error(e);
+            console.error('Impossible de charger la catégorie depuis le tableau', e);
             showNotification('Erreur chargement catégorie', 'error');
             return;
         }
@@ -526,14 +532,16 @@ async function editCategory(catId = null) {
 
 async function saveCategory(e) {
     e.preventDefault();
-    const catId = document.getElementById('categoryId').value;
+    const catIdRaw = document.getElementById('categoryId').value;
+    const catIdNum = catIdRaw ? Number(catIdRaw) : null;
     const data = {
         nom: document.getElementById('categoryName').value,
         description: document.getElementById('categoryDescription').value
     };
     try {
-        const method = catId ? 'PUT' : 'POST';
-        const url = catId ? `${API_BASE_URL}/categories/${catId}` : `${API_BASE_URL}/categories`;
+        // Use PUT only when catId is a valid finite number
+        const method = (catIdNum && Number.isFinite(catIdNum)) ? 'PUT' : 'POST';
+        const url = (method === 'PUT') ? `${API_BASE_URL}/categories/${catIdNum}` : `${API_BASE_URL}/categories`;
         // Debug: check token presence
         const token = getAuthToken();
         console.debug('saveCategory: token present?', !!token);

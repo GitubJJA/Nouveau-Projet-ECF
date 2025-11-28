@@ -41,7 +41,7 @@ if (loginForm) {
       showNotification("Connexion réussie !", "success");
 
       setTimeout(() => {
-        // 🔥 Redirection selon le rôle
+        //  Redirection selon le rôle
         if (data.user.Id_Role === 1) {
           window.location.href = "../admin/index.html"; // page admin
         } else if (data.user.Id_Role === 3) {
