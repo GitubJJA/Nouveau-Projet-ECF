@@ -10,7 +10,7 @@
 
 body {
   font-family: "Exo 2", sans-serif;
-  background: rgb(245, 237, 224);
+  background: #f5ede0;
   color: #fff;
   width: 100%;
 }
@@ -24,7 +24,7 @@ header {
   grid-template-columns: 1.5fr 3fr 1fr;
   background: #08403f;
   backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(0,255,128,0.15);
+  border-bottom: 1px solid #00ff8026;
   color: #a1f1c6;
   padding: 10px;
   text-align: center;
@@ -168,7 +168,7 @@ header {
   font-size: 1em;
   margin-left: 10px;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(0,255,128,0.2);
+  box-shadow: 0 4px 12px rgba(0, 255, 128, 0.2);
   position: relative;
 }
 
@@ -176,7 +176,7 @@ header {
   color: #0d0d0d;
   background: linear-gradient(135deg, #39ff14, #00ffaa);
   transform: scale(1.05);
-  box-shadow: 0 0 20px rgba(0,255,128,0.6), 0 0 40px rgba(0,255,128,0.3);
+  box-shadow: 0 0 20px #00ff8099, 0 0 40px rgba(0,255,128,0.3);
   animation: pulse 1.5s infinite;
 }
 .btn:active {
@@ -201,7 +201,7 @@ background: linear-gradient(135deg, #0d0d0d, #1a1a1d);
   color: #0d0d0d;
   background: linear-gradient(135deg, #39ff14, #00ffaa);
   transform: scale(1.05);
-  box-shadow: 0 0 20px rgba(0,255,128,0.6), 0 0 40px rgba(0,255,128,0.3);
+  box-shadow: 0 0 20px rgba(0, 255, 128, 0.6), 0 0 40px #00ff804d;
   animation: pulse 1.5s infinite;
 }
 .btn-center:active {
