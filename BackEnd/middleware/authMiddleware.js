@@ -1,7 +1,5 @@
 import jwt from "jsonwebtoken";
-
-// Clé secrète pour JWT (déplacer en .env en production)
-const SECRET_KEY = "TonSecretTrèsSecret123!"; // ou process.env.SECRET_KEY
+import { config } from '../config/env.js';
 
 // Vérifie le header Authorization Bearer, valide le token et ajoute `req.user`.
 // `req.user` contient : id_utilisateur, email, Id_Role (si présent dans le token).
@@ -13,7 +11,7 @@ export function authenticate(req, res, next) {
   if (!token) return res.status(401).json({ error: "user_not_authenticated" });
 
   try {
-    const payload = jwt.verify(token, SECRET_KEY);
+    const payload = jwt.verify(token, config.jwtSecret, { algorithms: ['HS256'] });
     // Ajoute les informations essentielles de l'utilisateur à la requête
     req.user = { id_utilisateur: payload.id_utilisateur, email: payload.email, Id_Role: payload.Id_Role };
     next();

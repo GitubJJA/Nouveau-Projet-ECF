@@ -130,22 +130,6 @@ CREATE TABLE `utilisateurs` (
 
 --
 -- Déchargement des données de la table `utilisateurs`
---
-
-INSERT INTO `utilisateurs` (`id_utilisateur`, `nom`, `prénom`, `email`, `mot_de_passe`, `date_inscription`, `Id_Role`) VALUES
-(50, 'Martin', 'Claire', 'claire.martin@example.com', 'azerty123', '2025-09-08 16:24:51', 2),
-(52, 'Durand', 'Sophie', 'sophie.durand@example.com', 'monmotdepasse', '2025-09-08 16:24:51', 2),
-(53, 'Leroy', 'Alice', 'alice.leroy@example.com', 'alicepass', '2025-09-08 16:24:51', 2),
-(55, 'Petit', 'Emma', 'emma.petit@example.com', 'emmapass', '2025-09-08 16:24:51', 2),
-(57, 'Garnier', 'Laura', 'laura.garnier@example.com', 'laurapass', '2025-09-08 16:24:51', 2),
-(60, 'aymeric', 'jeanjean', 'aymeric.34@hotmail.fr', '$2b$10$LtwxHe94rsf/vpiOS02cteE3nD31W5Udb34efREMn32ApDTljVaTe', '2025-09-23 10:11:05', 3),
-(61, 'eni', 'ganbat', 'eni@hotmail.fr', '$2b$10$p1sBCqS5qqBQX0V0C1YLtePJKTWm1ByFQKP0HYkZxdCjmAM.ic566', '2025-09-23 10:15:45', 3),
-(62, 'mader', 'nicolas', 'goongoon@hotmail.fr', '$2b$10$p1pqdjChkgL0eKi5vgSBsOW54tU442VtVyMgQG.hGY4HPzTN38H82', '2025-09-23 10:22:56', 3),
-(73, 'Taleb', 'Belkacem', 'Taleb@hotmail.fr', '$2b$10$hlc5bjk2Klj4yqkE7NLSk.fPyvw.GiDM5fKoto73kcZfLHOabglca', '2025-09-25 12:08:59', 3),
-(74, 'christophe', 'birot', 'chris@hotmail.fr', '$2b$10$IyEGsbPPbXyMEKLvLngKieqe4uUg6FJNH5vXPrJuPAwMJcgqtTMQC', '2025-10-02 18:07:09', 3),
-(79, 'mader', 'jjlj', 'mihijef497@lanipe.com', '$2b$10$MLJJ89cWE11Y.JbO0yEjGuvAQMTPwUWjEf3aiy/MZhDr/I8ynuVom', '2025-10-02 19:18:57', 3),
-(80, 'jeanjean', 'aymeric', 'aymeric.35@hotmail.fr', '$2b$10$Ob0WrfLmHMeUCvswgHrr0.kj1CkNoryZmo99V2Rs9H5ldkPR967Nm', '2025-10-02 19:44:41', 1),
-(82, 'Meyer', 'Sarah', 'sarah@hotmail.fr', '$2b$10$vdgKHS68qBafHE9vN8zgz.6ootocIPuOa6XcbP0mQMK/JAhNEF.eq', '2025-11-06 09:40:11', 3);
 
 --
 -- Index pour les tables déchargées

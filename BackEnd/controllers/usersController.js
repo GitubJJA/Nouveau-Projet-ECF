@@ -1,6 +1,7 @@
 import pool from '../config/dataBase.js';
 import bcrypt from 'bcrypt';
 import jwt from "jsonwebtoken";
+import { config } from '../config/env.js';
 
 const SALT_ROUNDS = 10;
 
@@ -35,7 +36,7 @@ export async function getUser(req, res, next) {
 // POST créer un utilisateur : hash du mot de passe puis insertion en base
 export async function createUser(req, res, next) {
   try {
-    const { nom, prénom, email, mot_de_passe, Id_Role } = req.body || {};
+    const { nom, prénom, email, mot_de_passe } = req.body || {};
     if (!nom || !prénom || !email || !mot_de_passe) {
       return res.status(400).json({ error: 'missing_fields' });
     }
@@ -43,7 +44,7 @@ export async function createUser(req, res, next) {
     const hash = await bcrypt.hash(mot_de_passe, SALT_ROUNDS);
     const [result] = await pool.query(
       'INSERT INTO utilisateurs (nom, prénom, email, mot_de_passe, Id_Role) VALUES (?, ?, ?, ?, ?)',
-      [nom, prénom, email, hash, Id_Role || null]
+      [nom, prénom, email, hash, 3]
     );
 
     const insertId = result.insertId;
@@ -68,15 +69,28 @@ export async function updateUser(req, res, next) {
     if (!req.user) return res.status(401).json({ error: 'user_not_authenticated' });
     const isAdmin = req.user.Id_Role === 1;
     if (!isAdmin && req.user.id_utilisateur !== id) return res.status(403).json({ error: 'forbidden' });
-    const { nom, prénom, email, mot_de_passe, Id_Role } = req.body || {};
+    const { nom, prénom, email, mot_de_passe, current_password: currentPassword, Id_Role } = req.body || {};
     const sets = [];
     const values = [];
+
+    const [userRows] = await pool.query(
+      'SELECT mot_de_passe FROM utilisateurs WHERE id_utilisateur = ?',
+      [id]
+    );
+    if (userRows.length === 0) return res.status(404).json({ error: 'not_found' });
+
+    if (!isAdmin && Id_Role !== undefined) {
+      return res.status(403).json({ error: 'forbidden' });
+    }
 
     if (nom) { sets.push('nom = ?'); values.push(nom); }
     if (prénom) { sets.push('prénom = ?'); values.push(prénom); }
     if (email) { sets.push('email = ?'); values.push(email); }
-    if (Id_Role) { sets.push('Id_Role = ?'); values.push(Id_Role); }
+    if (isAdmin && Id_Role !== undefined) { sets.push('Id_Role = ?'); values.push(Id_Role); }
     if (mot_de_passe) {
+      if (!isAdmin && (!currentPassword || !(await bcrypt.compare(currentPassword, userRows[0].mot_de_passe)))) {
+        return res.status(400).json({ error: 'current_password_invalid' });
+      }
       const hash = await bcrypt.hash(mot_de_passe, SALT_ROUNDS);
       sets.push('mot_de_passe = ?');
       values.push(hash);
@@ -120,9 +134,6 @@ export async function deleteUser(req, res, next) {
 }
 
 
-// Secret pour JWT (à déplacer dans .env en production)
-const SECRET_KEY = "TonSecretTrèsSecret123!"; // ⚠️
-
 // POST login : vérifie les identifiants et renvoie un token + info utilisateur
 export async function loginUser(req, res, next) {
   try {
@@ -150,7 +161,7 @@ export async function loginUser(req, res, next) {
     // Crée un token
     const token = jwt.sign(
       { id_utilisateur: user.id_utilisateur, email: user.email, Id_Role: user.Id_Role },
-      SECRET_KEY,
+      config.jwtSecret,
       { expiresIn: "2h" }
     );
 

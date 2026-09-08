@@ -34,7 +34,7 @@ DB_USER=root
 DB_PASS=ChangeMe
 DB_NAME=web_cyclopedia
 PORT=3000
-SECRET_KEY=une_cle_tres_secrete
+JWT_SECRET=une_cle_aleatoire_d_au_moins_32_caracteres
 ```
 
 Installation et lancement (développement):
@@ -118,7 +118,7 @@ Content-Type: application/json
 ### authenticate (extrait)
 
 1. Récupère l'en-tête `Authorization: Bearer <token>`.
-2. Vérifie le token via `jwt.verify(token, SECRET_KEY)`.
+2. Vérifie le token via `jwt.verify(token, JWT_SECRET)`.
 3. Attache `req.user = { id_utilisateur, email, Id_Role }`.
 4. En cas d'erreur renvoie 401.
 
@@ -126,7 +126,7 @@ Content-Type: application/json
 Vérifie `req.user && req.user.Id_Role === 1` sinon 403.
 
 ### Bonnes pratiques
-- Protéger `SECRET_KEY` et les variables d'environnement.
+- Protéger `JWT_SECRET` et les variables d'environnement.
 - En production : activer HTTPS, cookies `Secure`, et CORS strict.
 
 ## 6) Logging et Debug

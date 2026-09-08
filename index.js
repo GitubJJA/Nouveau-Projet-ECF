@@ -1,6 +1,5 @@
 import express from "express";
 import bodyParser from "body-parser";
-import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
 import apiSitesRouter from './BackEnd/routes/apiSites.js';
@@ -8,10 +7,9 @@ import apiUserRouter  from './BackEnd/routes/apiUser.js';
 import { signupUser, loginUser } from './BackEnd/controllers/usersController.js';
 import apiCategoryRouter from './BackEnd/routes/apiCategory.js';
 import cors from 'cors';
+import { config } from './BackEnd/config/env.js';
 
 
-
-dotenv.config({ path: './BackEnd/config/.env' });
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,8 +18,12 @@ console.log("Le script démarre !");
 
 const app = express();
 
-// Autorise toutes les origines (développement)
-app.use(cors());
+app.use(cors({
+  origin(origin, callback) {
+    if (!origin || config.corsOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error('Origin not allowed by CORS'));
+  },
+}));
 app.use(bodyParser.json());
 const PORT = process.env.PORT || 3000;
 

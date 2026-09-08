@@ -65,8 +65,16 @@ export async function patchSite(req, res, next) {
   const id = Number(req.params.id);
   if (!Number.isFinite(id)) return res.status(400).json({ error: 'invalid_id' });
   try {
+    if (!req.user) return res.status(401).json({ error: 'user_not_authenticated' });
+    const [existing] = await pool.query('SELECT id_utilisateur_1 FROM sites WHERE id = ?', [id]);
+    if (existing.length === 0) return res.status(404).json({ error: 'not_found' });
+    const isAdmin = req.user.Id_Role === 1;
+    if (!isAdmin && req.user.id_utilisateur !== existing[0].id_utilisateur_1) {
+      return res.status(403).json({ error: 'forbidden' });
+    }
     const body = req.body || {};
-    const allowed = ['nom','description','image','url','date_ajout','valide','id_categorie','id_utilisateur_1'];
+    const ownerAllowed = ['nom', 'description', 'image', 'url', 'date_ajout', 'id_categorie'];
+    const allowed = isAdmin ? [...ownerAllowed, 'valide', 'id_utilisateur_1'] : ownerAllowed;
     const fields = [];
     const values = [];
     for (const key of allowed) if (Object.prototype.hasOwnProperty.call(body,key)) { fields.push(`${key} = ?`); values.push(body[key]); }
@@ -96,11 +104,7 @@ export async function updateSite(req, res, next) {
   if (description !== undefined) { fields.push('description = ?'); values.push(description); }
   if (date_ajout !== undefined) { fields.push('date_ajout = ?'); values.push(date_ajout); }
   if (image !== undefined) { fields.push('image = ?'); values.push(image); }
-  if (valide !== undefined) { fields.push('valide = ?'); values.push(valide); }
   if (id_categorie !== undefined) { fields.push('id_categorie = ?'); values.push(id_categorie); }
-  if (id_utilisateur_1 !== undefined) { fields.push('id_utilisateur_1 = ?'); values.push(id_utilisateur_1); }
-  if (fields.length === 0) return res.status(400).json({ message: 'Aucun champ à mettre à jour' });
-  values.push(siteId);
   try {
     if (!req.user) return res.status(401).json({ error: 'user_not_authenticated' });
     const [existing] = await pool.query('SELECT id_utilisateur_1 FROM sites WHERE id = ?', [siteId]);
@@ -108,6 +112,10 @@ export async function updateSite(req, res, next) {
     const ownerId = existing[0].id_utilisateur_1;
     const isAdmin = req.user.Id_Role === 1;
     if (!isAdmin && req.user.id_utilisateur !== ownerId) return res.status(403).json({ error: 'forbidden' });
+    if (isAdmin && valide !== undefined) { fields.push('valide = ?'); values.push(valide); }
+    if (isAdmin && id_utilisateur_1 !== undefined) { fields.push('id_utilisateur_1 = ?'); values.push(id_utilisateur_1); }
+    if (fields.length === 0) return res.status(400).json({ message: 'Aucun champ à mettre à jour' });
+    values.push(siteId);
     const [result] = await pool.query(`UPDATE sites SET ${fields.join(', ')} WHERE id = ?`, values);
     if (result.affectedRows === 0) return res.status(404).json({ message: 'Site non trouvé' });
     const [updatedSite] = await pool.query('SELECT * FROM sites WHERE id = ?', [siteId]);
